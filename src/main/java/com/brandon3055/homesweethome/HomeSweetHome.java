@@ -38,6 +38,7 @@ public class HomeSweetHome {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
+        proxy.registerPacketHandlers();
     }
 
 }

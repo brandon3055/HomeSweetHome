@@ -1,5 +1,7 @@
 package com.brandon3055.homesweethome;
 
+import codechicken.lib.data.MCDataInput;
+import codechicken.lib.data.MCDataOutput;
 import com.brandon3055.brandonscore.handlers.FileHandler;
 import com.brandon3055.homesweethome.effects.EffectHelper;
 import com.brandon3055.homesweethome.util.LogHelper;
@@ -76,6 +78,8 @@ public class ModConfig {
 
     public static List<ConfigProperty> properties = new LinkedList<>();
     public static Map<String, ConfigProperty> propertyMap = new HashMap<>();
+
+    private static boolean connectedToServer = false;
 
     public static void registerProperties() {
         properties.clear();
@@ -262,6 +266,26 @@ public class ModConfig {
                 }
             }
         }
+
+        public void toBytes(MCDataOutput output) {
+            if (isInfo()) return;
+            if (floating) {
+                output.writeDouble(getValue());
+            }
+            else {
+                output.writeInt((int) getValue());
+            }
+        }
+
+        public void fromBytes(MCDataInput input) {
+            if (isInfo()) return;
+            if (floating) {
+                set(input.readDouble());
+            }
+            else {
+                set(input.readInt());
+            }
+        }
     }
 
     private static class PropBuilder {
@@ -305,6 +329,24 @@ public class ModConfig {
         public void desc(String info) {
             prop.setInfo(info);
         }
+    }
+
+    public static void writeConfigForSync(MCDataOutput output) {
+        for (ConfigProperty property : properties) {
+            property.toBytes(output);
+        }
+    }
+
+    public static void receiveConfigFromServer(MCDataInput input) {
+        LogHelper.dev("Received config from server!");
+        for (ConfigProperty property : properties) {
+            property.fromBytes(input);
+        }
+    }
+
+    public static void disconnectFromServer() {
+        connectedToServer = false;
+        loadClientConfig();
     }
 
     //region #### Save / Load ####
@@ -356,6 +398,9 @@ public class ModConfig {
     }
 
     public static void saveClientConfig() {
+        if (connectedToServer) {
+            return;
+        }
         JsonObject obj = new JsonObject();
         obj.addProperty("homeHudX", homeHudPos[0]);
         obj.addProperty("homeHudY", homeHudPos[1]);
@@ -365,6 +410,9 @@ public class ModConfig {
     }
 
     public static void loadClientConfig() {
+        if (connectedToServer) {
+            return;
+        }
         JsonObject cfg = readObj(clientConfig);
         if (cfg == null) return;
 

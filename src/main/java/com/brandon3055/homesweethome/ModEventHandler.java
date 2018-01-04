@@ -1,5 +1,6 @@
 package com.brandon3055.homesweethome;
 
+import com.brandon3055.homesweethome.network.PacketDispatcher;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
@@ -8,6 +9,7 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -73,8 +75,15 @@ public class ModEventHandler {
         }
     }
 
-//    @SubscribeEvent()
-//    public void playerLogIn(PlayerEvent.PlayerLoggedInEvent event) {
-//        EntityPlayer player = event.player;
-//    }
+    @SubscribeEvent()
+    public void disconnectEvent(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        ModConfig.disconnectFromServer();
+    }
+
+    @SubscribeEvent()
+    public void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.player instanceof EntityPlayerMP && event.player.getServer() != null && event.player.getServer().isDedicatedServer()) {
+            PacketDispatcher.sendConfigToClient((EntityPlayerMP) event.player);
+        }
+    }
 }

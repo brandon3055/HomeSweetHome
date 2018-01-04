@@ -298,9 +298,9 @@ public class CommandEffect extends CommandBase {
     public static String getSourceInfo(Source source) {
         switch (source) {
             case TIREDNESS:
-                return "For this source the trigger value is the number of minutes the player must be away from home in order for this effect to trigger.";
+                return "For this source the trigger value is the number of minutes the player must be awake past the time until tired config in order for this effect to trigger.";
             case HOMESICKNESS:
-                return "For this source the trigger value is the number of minutes the player must be away from home in order for this effect to trigger.";
+                return "For this source the trigger value is the number of minutes the player must be away past the time until homesick config in order for this effect to trigger.";
             case SLEPT_AWAY:
                 return "For this source the trigger value is how far (in blocks) the player must be from home for the effect to trigger.";
             case SLEPT_NO_HOME:

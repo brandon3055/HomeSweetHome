@@ -3,6 +3,7 @@ package com.brandon3055.homesweethome.command;
 import com.brandon3055.brandonscore.lib.ChatHelper;
 import com.brandon3055.homesweethome.ModConfig;
 import com.brandon3055.homesweethome.ModConfig.ConfigProperty;
+import com.brandon3055.homesweethome.network.PacketDispatcher;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -59,6 +60,10 @@ public class CommandConfig extends CommandBase {
             if (prop != null) {
                 prop.setValue(args[2]);
                 ChatHelper.message(sender, GREEN + "Property " + args[1] + " changed to " + args[2]);
+
+                if (server.isDedicatedServer()){
+                    PacketDispatcher.sendConfigToClient(null);
+                }
             }
             else {
                 throw new CommandException("The specified property does not exist!");

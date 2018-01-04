@@ -1,9 +1,11 @@
 package com.brandon3055.homesweethome;
 
+import codechicken.lib.packet.PacketCustom;
 import com.brandon3055.brandonscore.handlers.IProcess;
 import com.brandon3055.brandonscore.handlers.ProcessHandler;
 import com.brandon3055.homesweethome.network.PacketMakeHome;
 import com.brandon3055.homesweethome.network.PacketSyncClient;
+import com.brandon3055.homesweethome.network.ServerPacketHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -31,5 +33,9 @@ public class CommonProxy {
 
     public void runSidedProcess(IProcess process) {
         ProcessHandler.addProcess(process);
+    }
+
+    public void registerPacketHandlers() {
+        PacketCustom.assignHandler("HSHPCChannel", new ServerPacketHandler());
     }
 }

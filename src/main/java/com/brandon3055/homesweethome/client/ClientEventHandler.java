@@ -1,5 +1,6 @@
 package com.brandon3055.homesweethome.client;
 
+import codechicken.lib.util.ClientUtils;
 import com.brandon3055.brandonscore.client.utils.GuiHelper;
 import com.brandon3055.homesweethome.HomeSweetHome;
 import com.brandon3055.homesweethome.ModConfig;
@@ -57,7 +58,7 @@ public class ClientEventHandler {
 
     @SubscribeEvent
     public void clientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
+        if (event.phase == TickEvent.Phase.END && ClientUtils.inWorld()) {
             Minecraft mc = Minecraft.getMinecraft();
             RayTraceResult rtr = mc.objectMouseOver;
             tick++;
