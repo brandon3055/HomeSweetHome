@@ -39,7 +39,7 @@ Do you want me to just use vanilla/mod potion effects or implement something cus
 
 While the player has no permanent home they will get a small de-buff every time they sleep.
 
-Once the player has a home sleeping within the homes radius will give the player positive effects.
+Once the player has a home, sleeping within the homes radius will give the player positive effects.
 The effect strength will be determined by the homeliness at their location.
 
 May also have some permanent effects as long as the player is within their home.

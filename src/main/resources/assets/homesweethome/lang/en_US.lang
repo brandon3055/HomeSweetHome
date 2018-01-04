@@ -1,0 +1,50 @@
+# No home
+hsh.hud.noHome=Your Homeless!
+hsh.hud.sleepInBed=Sleep in this bed to make it your home!
+hsh.hud.sleepInABed=Sleep in a bed to make it your home!
+
+# Not Permanent
+hsh.hud.youHaveAHome=You have a home!
+hsh.hud.butItsNotHomey=But its not homely enough to call your own.
+hsh.hud.requiredLevelForPerm=You require a homeliness level of %s to make this your permanent home
+
+# Can make permanent
+hsh.hud.canBeHome=This could be your home!
+hsh.hud.nextSleepOption=Next time you sleep you can make this home permanent!
+
+# Is home
+hsh.hud.homeSweetHome=Home Sweet Home!
+
+# Is not home
+hsh.hud.notYourHome=This is not your home
+hsh.hud.canStillBeHome=But you can still make this your home.
+hsh.hud.canStillBeHome2=Sleep here to make it yours!
+hsh.hud.wontEnjoySleep=You wont enjoy sleeping here.
+
+# Stats
+hsh.hud.sneakForStats=Sneak for stats...
+hsh.hud.level=Home Level:
+hsh.hud.homePos=Home Center:
+hsh.hud.radius=Home Radius: %s Blocks
+hsh.hud.distance=You are %s blocks from the center of your home.
+hsh.hud.levelHere=Level Here:
+
+# Effects
+hsh.hud.youAreHomeSick=You are home sick!
+hsh.hud.daysAwayFromHome=Days away from home:
+hsh.hud.youAreTired=You are tired!
+hsh.hud.daysWithoutSleep=Days without sleep:
+hsh.hud.distFromHome=You are %s blocks from home
+
+# Gui
+hsh.gui.makeHome.youCanNowMakeThisYourHome=You can now make this location your permanent home!
+hsh.gui.makeHome.makeHomeInfo1=Key word "Permanent" if you make this your home there is no going back so be sure you want to stay here.
+hsh.gui.makeHome.makeHomeInfo2=Once you have a permanent home you will be able to finally get a proper nights sleep! If you build up your home's homeliness enough by spending time and sleeping here you may also get some useful effects!
+hsh.gui.makeHome.confirmHome=Make this my home!
+hsh.gui.makeHome.cancelHome=Not yet I would like to keep my options open.
+
+hsh.gui.moveElements.clickAndDrag=Click and drag the marked anchor points to move the elements.
+
+# Other
+key.showHomeInfo=Show home info
+hsh.hud.shiftToMoveElements=Hold CTRL to move hud elements
