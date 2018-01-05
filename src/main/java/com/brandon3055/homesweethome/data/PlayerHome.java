@@ -13,7 +13,7 @@ import net.minecraft.util.math.Vec3d;
 public class PlayerHome {
 
     private PlayerData playerData;
-    private Vec3d pos;
+    private Vec3d pos = new Vec3d(0, 0, 0);
     private boolean isPermanent = false;
     public final Homeliness homeliness = new Homeliness(this);
 

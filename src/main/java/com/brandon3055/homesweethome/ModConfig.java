@@ -3,7 +3,8 @@ package com.brandon3055.homesweethome;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
 import com.brandon3055.brandonscore.handlers.FileHandler;
-import com.brandon3055.homesweethome.effects.EffectHelper;
+import com.brandon3055.homesweethome.helpers.EffectHelper;
+import com.brandon3055.homesweethome.helpers.EventCommandHelper;
 import com.brandon3055.homesweethome.util.LogHelper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -382,6 +383,7 @@ public class ModConfig {
         }
 
         EffectHelper.writeEffectsToConfig(obj);
+        EventCommandHelper.writeCommandsToConfig(obj);
 
         writeJson(obj, config);
     }
@@ -395,6 +397,7 @@ public class ModConfig {
         }
 
         EffectHelper.readEffectsFromConfig(obj);
+        EventCommandHelper.readCommandsFromConfig(obj);
     }
 
     public static void saveClientConfig() {

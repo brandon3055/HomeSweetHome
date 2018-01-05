@@ -63,6 +63,11 @@ public class ClientEventHandler {
             RayTraceResult rtr = mc.objectMouseOver;
             tick++;
 
+            if (data == null) {
+                PacketSyncClient.requestUpdateClientSide();
+                return;
+            }
+
             boolean requestUpdate = false;
 
             hudKeyDown = Keyboard.isKeyDown(ClientEventHandler.homeInfo.getKeyCode());
@@ -89,7 +94,7 @@ public class ClientEventHandler {
                     }
                 }
 
-                if (data != null && (data.isHomeSick() || data.isTired())) {
+                if (data.isHomeSick() || data.isTired()) {
                     showEffects = true;
                 }
             }
@@ -99,9 +104,9 @@ public class ClientEventHandler {
                     PacketSyncClient.requestUpdateClientSide();
                 }
 
-                if (data != null && data.hasHome()) {
+                if (data.hasHome()) {
                     PlayerHome home = data.getHome();
-                    dist = lookingAtBed ? home.getDistance(rtr.getBlockPos()) : home.getDistance(mc.player);
+                    dist = lookingAtBed && rtr != null && rtr.typeOfHit == RayTraceResult.Type.BLOCK ? home.getDistance(rtr.getBlockPos()) : home.getDistance(mc.player);
                 }
             }
         }
@@ -155,16 +160,22 @@ public class ClientEventHandler {
             lines.put(TextFormatting.DARK_RED + I18n.format("hsh.hud.youAreHomeSick"), 0xFFFFFF);
         }
         if (drawDaysAway) {
-            lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.daysAwayFromHome") + TextFormatting.RESET + " " + data.getTimeAwayReadable(), daysAwayColour);
+            int minutes = (int) data.getTimeAway();
+            int seconds = (int) ((data.getTimeAway() % 1) * 60);
+            String mins = "(" + (minutes > 9 ? minutes : "0" + minutes) + ":" + (seconds > 9 ? seconds : "0" + seconds) + ")";
+            lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.daysAwayFromHome") + TextFormatting.RESET + " " + data.getDaysAwayRounded() + (shiftDown ? " " + mins : ""), daysAwayColour);
         }
         if (data.isTired()) {
             lines.put(TextFormatting.DARK_RED + I18n.format("hsh.hud.youAreTired"), 0xFFFFFF);
         }
         if (drawTimeSinceSleep) {
-            lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.daysWithoutSleep") + TextFormatting.RESET + " " + data.getTimeSinceSleepReadable(), daysSleepColour);
+            int minutes = (int) data.getTimeAwake();
+            int seconds = (int) ((data.getTimeAwake() % 1) * 60);
+            String mins = "(" + (minutes > 9 ? minutes : "0" + minutes) + ":" + (seconds > 9 ? seconds : "0" + seconds) + ")";
+            lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.daysWithoutSleep") + TextFormatting.RESET + " " + data.getDaysAwakeRounded() + (shiftDown ? " " + mins : ""), daysSleepColour);
         }
         if (drawDaysAway || drawTimeSinceSleep) {
-            lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.distFromHome", RESET + "" + (int) dist + "" + WHITE), 0xFFAA00);
+            lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.distFromHome" + ((int) dist > 1 || (int) dist == 0 ? "2" : ""), RESET + "" + (int) dist + "" + WHITE), 0xFFAA00);
         }
 
         if (lines.isEmpty()) return;

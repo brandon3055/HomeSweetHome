@@ -17,6 +17,7 @@ public class CommandHSH extends CommandTreeBase {
         addSubcommand(new CommandConfig());
         addSubcommand(new CommandEffect());
         addSubcommand(new CommandPlayer());
+        addSubcommand(new CommandEventCmd());
     }
 
     @Override

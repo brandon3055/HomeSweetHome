@@ -1,23 +1,23 @@
 # No home
-hsh.hud.noHome=Your Homeless!
-hsh.hud.sleepInBed=Sleep in this bed to make it your home!
-hsh.hud.sleepInABed=Sleep in a bed to make it your home!
+hsh.hud.noHome=You're homelss!
+hsh.hud.sleepInBed=Sleep in this bed to make it you're home!
+hsh.hud.sleepInABed=Sleep in a bed to make it you're home!
 
 # Not Permanent
 hsh.hud.youHaveAHome=You have a home!
-hsh.hud.butItsNotHomey=But its not homely enough to call your own.
-hsh.hud.requiredLevelForPerm=You require a homeliness level of %s to make this your permanent home
+hsh.hud.butItsNotHomey=But its not homely enough to call you're own.
+hsh.hud.requiredLevelForPerm=You require a homeliness level of %s to make this you're permanent home
 
 # Can make permanent
-hsh.hud.canBeHome=This could be your home!
+hsh.hud.canBeHome=This could be you're home!
 hsh.hud.nextSleepOption=Next time you sleep you can make this home permanent!
 
 # Is home
 hsh.hud.homeSweetHome=Home Sweet Home!
 
 # Is not home
-hsh.hud.notYourHome=This is not your home
-hsh.hud.canStillBeHome=But you can still make this your home.
+hsh.hud.notYourHome=This is not you're home
+hsh.hud.canStillBeHome=But you can still make this you're home.
 hsh.hud.canStillBeHome2=Sleep here to make it yours!
 hsh.hud.wontEnjoySleep=You wont enjoy sleeping here.
 
@@ -26,7 +26,7 @@ hsh.hud.sneakForStats=Sneak for stats...
 hsh.hud.level=Home Level:
 hsh.hud.homePos=Home Center:
 hsh.hud.radius=Home Radius: %s Blocks
-hsh.hud.distance=You are %s blocks from the center of your home.
+hsh.hud.distance=You are %s blocks from the center of you're home.
 hsh.hud.levelHere=Level Here:
 
 # Effects
@@ -34,12 +34,13 @@ hsh.hud.youAreHomeSick=You are home sick!
 hsh.hud.daysAwayFromHome=Days away from home:
 hsh.hud.youAreTired=You are tired!
 hsh.hud.daysWithoutSleep=Days without sleep:
-hsh.hud.distFromHome=You are %s blocks from home
+hsh.hud.distFromHome=You are %s block from home
+hsh.hud.distFromHome2=You are %s blocks from home
 
 # Gui
-hsh.gui.makeHome.youCanNowMakeThisYourHome=You can now make this location your permanent home!
-hsh.gui.makeHome.makeHomeInfo1=Key word "Permanent" if you make this your home there is no going back so be sure you want to stay here.
-hsh.gui.makeHome.makeHomeInfo2=Once you have a permanent home you will be able to finally get a proper nights sleep! If you build up your home's homeliness enough by spending time and sleeping here you may also get some useful effects!
+hsh.gui.makeHome.youCanNowMakeThisYourHome=You can now make this location you're permanent home!
+hsh.gui.makeHome.makeHomeInfo1=Key word "Permanent" if you make this you're home there is no going back so be sure you want to stay here.
+hsh.gui.makeHome.makeHomeInfo2=Once you have a permanent home you will be able to finally get a proper nights sleep! If you build up you're home's homeliness enough by spending time and sleeping here you may also get some useful effects!
 hsh.gui.makeHome.confirmHome=Make this my home!
 hsh.gui.makeHome.cancelHome=Not yet I would like to keep my options open.
 
