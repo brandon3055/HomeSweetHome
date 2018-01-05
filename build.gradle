@@ -14,6 +14,29 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
+group = "com.brandon3055"
+archivesBaseName = "HomeSweetHome"
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+// Define properties file
+ext.configFile = file "build.properties"
+
+configFile.withReader {
+    // Load config.  It shall from now be referenced as simply config or project.config
+    def prop = new Properties()
+    prop.load(it)
+    project.ext.config = new ConfigSlurper().parse prop
+}
+
+configurations {
+    pack
+    compile {
+        extendsFrom pack
+    }
+}
+
 repositories {
     maven {
         name = "CoFH Maven"
@@ -29,23 +52,15 @@ repositories {
     }
 }
 
-// Define properties file
-ext.configFile = file "build.properties"
-
-configFile.withReader {
-    // Load config.  It shall from now be referenced as simply config or project.config
-    def prop = new Properties()
-    prop.load(it)
-    project.ext.config = new ConfigSlurper().parse prop
+dependencies {
+    compile "codechicken:CodeChickenLib:${config.ccl_mc_version}-${config.ccl_version}:deobf"
+    compile "com.brandon3055.brandonscore:BrandonsCore:${config.mc_version}-${config.bcore_version}:deobf"
+    pack "codechicken:ChickenASM:${config.mc_version}-${config.cc_asm_version}"
 }
 
-version = "${config.mc_version}-${config.mod_version}"
-group = "com.brandon3055"
-archivesBaseName = "HomeSweetHome"
 
-sourceCompatibility = "1.8"
-targetCompatibility = "1.8"
-
+version = "${project.config.mod_version}." + (System.getenv("BUILD_NUMBER") ?: "4")
+println config.mc_version + "-" + config.forge_version
 minecraft {
     version = config.mc_version + "-" + config.forge_version
     runDir = "run"
@@ -54,45 +69,58 @@ minecraft {
     makeObfSourceJar = false
 }
 
-String buildNo = "4"
-if (System.getenv("BUILD_NUMBER") != null) {
-    buildNo = System.getenv("BUILD_NUMBER")
+processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mc_version", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+
+        // replace version and mc_version
+        expand 'version': project.version, 'mc_version': project.minecraft.version
+    }
+
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+    rename '(.+_at.cfg)', 'META-INF/$1'
 }
-version = version + ".${buildNo}"
 
-dependencies {
-	compile "codechicken:CodeChickenLib:${config.mc_version}-${config.ccl_version}:deobf"
-    compile "com.brandon3055.brandonscore:BrandonsCore:${config.mc_version}-${config.bcore_version}:deobf"
+version = "${project.minecraft.version}-${project.version}"
+
+def commonManifest = {
+    attributes 'ContainedDeps': "ChickenASM-${config.mc_version}-${config.cc_asm_version}.jar ${archivesBaseName}-${version}-asm.jar"
+    attributes 'FMLAT': 'HomeSweetHome_at.cfg'
 }
 
-processResources
-        {
-            // this will ensure that this task is redone when the versions change.
-            inputs.property "version", project.version
-            inputs.property "mc_version", project.minecraft.version
+def asmManifest = {
+    attributes 'FMLCorePlugin': 'com.brandon3055.homesweethome.asm.LoadingPlugin'
+}
 
-            // replace stuff in mcmod.info, nothing else
-            from(sourceSets.main.resources.srcDirs) {
-                include 'mcmod.info'
-
-                // replace version and mc_version
-                expand 'version': project.version, 'mc_version': project.minecraft.version
-            }
-
-            // copy everything else, thats not the mcmod.info
-            from(sourceSets.main.resources.srcDirs) {
-                exclude 'mcmod.info'
-            }
-            rename '(.+_at.cfg)', 'META-INF/$1'
-        }
-
-//def commonManifest = {
-//}
-
-
+//Because FG reobfuscation..
 jar {
+    classifier = 'temp'
+}
+
+task asmJar(type: Jar, dependsOn: reobfJar) {
+    classifier = 'asm'
+    from(zipTree(jar.archivePath)) {
+        include "**/com/brandon3055/homesweethome/asm/*.class"
+        include "**/assets/homesweethome/asm/**"
+    }
+}
+
+task universalJar(type: Jar, dependsOn: asmJar) {
     classifier = 'universal'
-    //manifest commonManifest
+    manifest commonManifest
+    from configurations.pack
+    from asmJar.archivePath
+    from(zipTree(jar.archivePath)) {
+        exclude "**/com/brandon3055/homesweethome/asm/**"
+    }
 }
 
 task srcJar(type: Jar) {
@@ -103,12 +131,14 @@ task srcJar(type: Jar) {
 task deobfJar(type: Jar) {
     from sourceSets.main.output
     classifier = 'deobf'
-    //manifest commonManifest
+    manifest commonManifest
+    from configurations.pack
+    from asmJar.archivePath
 }
 
 // Tell the artifact system about our extra jars
 artifacts {
-    archives srcJar, deobfJar
+    archives universalJar, asmJar, srcJar, deobfJar
 }
 
 uploadArchives {
