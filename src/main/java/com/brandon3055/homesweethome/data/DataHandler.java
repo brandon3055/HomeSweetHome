@@ -1,5 +1,6 @@
 package com.brandon3055.homesweethome.data;
 
+import com.brandon3055.homesweethome.util.LogHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -33,7 +34,7 @@ public class DataHandler extends WorldSavedData {
     public static DataHandler getDataInstance(World world) {
         MapStorage storage = world.getMapStorage();
         if (storage == null) {
-            return null;
+            LogHelper.bigError("Detected null MapStorage! This may cause issues!");
         }
         WorldSavedData data = storage.getOrLoadData(DataHandler.class, SAVE_DATA_NAME);
         if (data != null && data instanceof DataHandler) {

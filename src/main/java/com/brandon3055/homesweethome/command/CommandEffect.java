@@ -1,10 +1,10 @@
 package com.brandon3055.homesweethome.command;
 
 import com.brandon3055.brandonscore.lib.ChatHelper;
-import com.brandon3055.homesweethome.effects.EffectHelper;
-import com.brandon3055.homesweethome.effects.EffectHelper.EffectHandler;
-import com.brandon3055.homesweethome.effects.EffectHelper.EffectTrigger;
-import com.brandon3055.homesweethome.effects.EffectHelper.EffectTrigger.Source;
+import com.brandon3055.homesweethome.helpers.EffectHelper;
+import com.brandon3055.homesweethome.helpers.EffectHelper.EffectHandler;
+import com.brandon3055.homesweethome.helpers.EffectHelper.EffectTrigger;
+import com.brandon3055.homesweethome.helpers.EffectHelper.EffectTrigger.Source;
 import com.brandon3055.homesweethome.ModConfig;
 import com.brandon3055.homesweethome.util.LogHelper;
 import net.minecraft.command.CommandBase;
@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 import static net.minecraft.util.text.TextFormatting.*;
-import static net.minecraft.util.text.event.ClickEvent.Action.RUN_COMMAND;
 import static net.minecraft.util.text.event.ClickEvent.Action.SUGGEST_COMMAND;
 import static net.minecraft.util.text.event.HoverEvent.Action.SHOW_TEXT;
 
@@ -191,8 +190,8 @@ public class CommandEffect extends CommandBase {
     private void sendHandlerInfo(ICommandSender sender, EffectHandler handler, Source filter) {
         Potion potion = handler.getPotion();
         String name = potion == null ? "[invalid-potion-id]" : potion.getName();
-        ITextComponent msg = buildComponent(GRAY + "Handler for: ", GRAY + "Effect handler for: " + GOLD + handler.effectID).appendSibling(buildComponent(GOLD, name, true));
-        ITextComponent remove = buildComponent(RED + " [Remove]", GRAY + "Click for command to remove all source of this effect", SUGGEST_COMMAND, "/home_sweet_home effect remove " + handler.effectID);
+        ITextComponent msg = ChatBuilder.buildComponent(GRAY + "Handler for: ", GRAY + "Effect handler for: " + GOLD + handler.effectID).appendSibling(ChatBuilder.buildComponent(GOLD, name, true));
+        ITextComponent remove = ChatBuilder.buildComponent(RED + " [Remove]", GRAY + "Click for command to remove all source of this effect", SUGGEST_COMMAND, "/home_sweet_home effect remove " + handler.effectID);
         msg.appendSibling(remove);
         sender.sendMessage(msg);
 
@@ -210,62 +209,22 @@ public class CommandEffect extends CommandBase {
                 }
             }
 
-            ITextComponent ampMsg = buildComponent("  Amplifier level " + amplifier + " sources");
-            ITextComponent ampRemove = buildComponent(RED + " [Remove]", GRAY + "Click for command to remove all source of this effect at this amplifier level.", SUGGEST_COMMAND, "/home_sweet_home effect remove " + handler.effectID + " " + amplifier);
+            ITextComponent ampMsg = ChatBuilder.buildComponent("  Amplifier level " + amplifier + " sources");
+            ITextComponent ampRemove = ChatBuilder.buildComponent(RED + " [Remove]", GRAY + "Click for command to remove all source of this effect at this amplifier level.", SUGGEST_COMMAND, "/home_sweet_home effect remove " + handler.effectID + " " + amplifier);
             sender.sendMessage(ampMsg.appendSibling(ampRemove));
 
             triggers.forEach(trigger -> {
                 if (filter != null && filter != trigger.getSource()) {
                     return;
                 }
-                ITextComponent trigMsg = buildComponent(GREEN + "    Source: " + GOLD + trigger.getSource().commandName() + GREEN + ", Trigger Value: " + GOLD + " " + (int) trigger.getTriggerValue(), GRAY + getLevelInfo(trigger));
-                ITextComponent trigRemove = buildComponent(RED + " [Remove]", GRAY + "Click for command to remove this source", SUGGEST_COMMAND, "/home_sweet_home effect remove " + handler.effectID + " " + amplifier + " " + trigger.getSource().commandName() + " " + (int) trigger.getTriggerValue());
+                ITextComponent trigMsg = ChatBuilder.buildComponent(GREEN + "    Source: " + GOLD + trigger.getSource().commandName() + GREEN + ", Trigger Value: " + GOLD + " " + (int) trigger.getTriggerValue(), GRAY + getLevelInfo(trigger));
+                ITextComponent trigRemove = ChatBuilder.buildComponent(RED + " [Remove]", GRAY + "Click for command to remove this source", SUGGEST_COMMAND, "/home_sweet_home effect remove " + handler.effectID + " " + amplifier + " " + trigger.getSource().commandName() + " " + (int) trigger.getTriggerValue());
                 sender.sendMessage(trigMsg.appendSibling(trigRemove));
                 if (trigger.getSource().hasDuration()) {
-                    sender.sendMessage(buildComponent(GRAY + "    -Duration: " + trigger.getDuration() / 20 + " seconds"));
+                    sender.sendMessage(ChatBuilder.buildComponent(GRAY + "    -Duration: " + trigger.getDuration() / 20 + " seconds"));
                 }
             });
         });
-    }
-
-    private ITextComponent buildComponent(TextFormatting colour, String text, boolean translate, HoverEvent.Action hoverAction, String hover, Action action, String command) {
-        ITextComponent comp = translate ? new TextComponentTranslation(text) : new TextComponentString(text);
-        Style style = new Style();
-        if (colour != null) {
-            style.setColor(colour);
-        }
-        if (hoverAction != null) {
-            style.setHoverEvent(new HoverEvent(hoverAction, new TextComponentString(hover)));
-        }
-        if (action != null) {
-            style.setClickEvent(new ClickEvent(action, command));
-        }
-        comp.setStyle(style);
-        return comp;
-    }
-
-    private ITextComponent buildComponent(String text, String tip, Action action, String actionArg) {
-        return buildComponent(null, text, false, SHOW_TEXT, tip, action, actionArg);
-    }
-
-    private ITextComponent buildComponent(String text, String tip, String command) {
-        return buildComponent(null, text, false, SHOW_TEXT, tip, RUN_COMMAND, command);
-    }
-
-    private ITextComponent buildComponent(String text, String tip) {
-        return buildComponent(null, text, false, SHOW_TEXT, tip, null, "");
-    }
-
-    private ITextComponent buildComponent(String text) {
-        return buildComponent(null, text, false, null, "", null, "");
-    }
-
-    private ITextComponent buildComponent(TextFormatting colour, String text, boolean translate) {
-        return buildComponent(colour, text, translate, null, "", null, "");
-    }
-
-    private ITextComponent buildComponent(TextFormatting colour, String text, boolean translate, String tip) {
-        return buildComponent(colour, text, translate, SHOW_TEXT, tip, null, "");
     }
 
     private void chatWithHover(ICommandSender sender, String text, String hover) {

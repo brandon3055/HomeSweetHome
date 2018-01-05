@@ -2,15 +2,19 @@ package com.brandon3055.homesweethome.data;
 
 import codechicken.lib.math.MathHelper;
 import com.brandon3055.brandonscore.utils.Utils;
+import com.brandon3055.homesweethome.helpers.HSHEventHelper;
 import com.brandon3055.homesweethome.ModConfig;
 import com.brandon3055.homesweethome.util.LogHelper;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
+
+import static com.brandon3055.homesweethome.helpers.HSHEventHelper.Event.MAKE_PERM_HOME;
 
 /**
  * Created by brandon3055 on 2/01/2018.
@@ -43,6 +47,10 @@ public class PlayerData {
 
     public boolean hasPermHome() {
         return hasHome() && home.isPermanent();
+    }
+
+    public boolean hasNonPermHome() {
+        return hasHome() && !home.isPermanent();
     }
 
     public boolean hasHome() {
@@ -98,7 +106,7 @@ public class PlayerData {
     /**
      * @return The number of minutes since the player last slept.
      */
-    public double getTimeSinceSleep() {
+    public double getTimeAwake() {
         return timeSinceSleep;
     }
 
@@ -120,14 +128,14 @@ public class PlayerData {
     /**
      * @return The number of days away as a player readable value.
      */
-    public double getTimeAwayReadable() {
+    public double getDaysAwayRounded() {
         return Utils.round(timeAway / (double) ModConfig.minutesInDay, 100);
     }
 
     /**
      * @return The number of days since sleep as a player readable value.
      */
-    public double getTimeSinceSleepReadable() {
+    public double getDaysAwakeRounded() {
         return Utils.round(timeSinceSleep / (double) ModConfig.minutesInDay, 100);
     }
 
@@ -147,9 +155,10 @@ public class PlayerData {
         markDirty();
     }
 
-    public void tryMakeHomePermanent(EntityPlayer player) {
+    public void tryMakeHomePermanent(EntityPlayerMP player) {
         if (hasHome() && !hasPermHome() && getHome().homeliness.getLevel() >= ModConfig.levelForPerm) {
             getHome().setPermanent(true);
+            HSHEventHelper.fireEvent(MAKE_PERM_HOME, player, this);
         }
         else {
             player.sendMessage(new TextComponentString(TextFormatting.DARK_RED + "Error invalid make home packet received from client!"));

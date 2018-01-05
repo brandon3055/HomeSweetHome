@@ -1,9 +1,10 @@
-package com.brandon3055.homesweethome.effects;
+package com.brandon3055.homesweethome.helpers;
 
+import com.brandon3055.homesweethome.helpers.HSHEventHelper.Event;
 import com.brandon3055.homesweethome.ModConfig;
 import com.brandon3055.homesweethome.data.PlayerData;
 import com.brandon3055.homesweethome.data.PlayerHome;
-import com.brandon3055.homesweethome.effects.EffectHelper.EffectTrigger.Source;
+import com.brandon3055.homesweethome.helpers.EffectHelper.EffectTrigger.Source;
 import com.brandon3055.homesweethome.util.DelayedTask;
 import com.brandon3055.homesweethome.util.LogHelper;
 import com.google.gson.JsonArray;
@@ -20,7 +21,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static com.brandon3055.homesweethome.effects.EffectHelper.EffectTrigger.Source.*;
+import static com.brandon3055.homesweethome.helpers.EffectHelper.EffectTrigger.Source.*;
 
 /**
  * Created by brandon3055 on 2/01/2018.
@@ -167,21 +168,23 @@ public class EffectHelper {
 
         //The source of the effect
         public enum Source {
-            TIREDNESS(false, false, () -> ModConfig.tiredEffectsRender == 1),
-            HOMESICKNESS(false, false, () -> ModConfig.homesickEffectsRender == 1),
-            SLEPT_AWAY(false, true, () -> ModConfig.sleepAwayEffectsRender == 1),
-            SLEPT_NO_HOME(false, true, () -> ModConfig.sleepAwayEffectsRender == 1),
-            SLEPT_AT_HOME(true, true, () -> ModConfig.sleepHomeEffectsRender == 1),
-            IN_HOME(true, false, () -> ModConfig.homeEffectsRender == 1);
+            TIREDNESS(false, false, () -> ModConfig.tiredEffectsRender == 1, Event.TIRED_EFFECT_APPLIED),
+            HOMESICKNESS(false, false, () -> ModConfig.homesickEffectsRender == 1, Event.HOMESICK_EFFECT_APPLIED),
+            SLEPT_AWAY(false, true, () -> ModConfig.sleepAwayEffectsRender == 1, Event.SLEEP_AWAY_EFFECT),
+            SLEPT_NO_HOME(false, true, () -> ModConfig.sleepAwayEffectsRender == 1, Event.SLEEP_NO_PERM_HOME_EFFECT),
+            SLEPT_AT_HOME(true, true, () -> ModConfig.sleepHomeEffectsRender == 1, Event.SLEEP_HOME_EFFECT),
+            IN_HOME(true, false, () -> ModConfig.homeEffectsRender == 1, Event.HOME_EFFECT_APPLIED);
 
             private boolean isPositive;
             private boolean hasDuration;
             private Supplier<Boolean> drawAmbient;
+            private Event event;
 
-            Source(boolean isPositive, boolean hasDuration, Supplier<Boolean> drawAmbient) {
+            Source(boolean isPositive, boolean hasDuration, Supplier<Boolean> drawAmbient, Event event) {
                 this.isPositive = isPositive;
                 this.hasDuration = hasDuration;
                 this.drawAmbient = drawAmbient;
+                this.event = event;
             }
 
             public static final Set<String> names = new HashSet<>();
@@ -213,6 +216,10 @@ public class EffectHelper {
 
             public boolean drawAmbient() {
                 return drawAmbient.get();
+            }
+
+            public void fireEvent(PlayerData data, EntityPlayerMP player) {
+                HSHEventHelper.fireEvent(event, player, data);
             }
         }
     }
@@ -293,7 +300,10 @@ public class EffectHelper {
                                 effect.duration = 1000000;
                                 player.connection.sendPacket(new SPacketEntityEffect(player.getEntityId(), effect));
                                 effect.duration = duration;
-                                DelayedTask.run(5, () -> player.addPotionEffect(effect));
+                                DelayedTask.run(5, () -> {
+                                    player.addPotionEffect(effect);
+                                    trigger.source.fireEvent(data, player);
+                                });
                             }
                         }
                         else {
