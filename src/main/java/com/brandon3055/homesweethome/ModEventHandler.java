@@ -4,16 +4,18 @@ import com.brandon3055.homesweethome.data.PlayerData;
 import com.brandon3055.homesweethome.helpers.PlayerTickHelper;
 import com.brandon3055.homesweethome.helpers.SleepHelper;
 import com.brandon3055.homesweethome.network.PacketDispatcher;
-import com.brandon3055.homesweethome.util.LogHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 import java.util.HashMap;
@@ -26,7 +28,16 @@ public class ModEventHandler {
 
     public static Map<String, PlayerTickHelper> playerTickHandlerMap = new HashMap<>();
 
-//    private static List<String> wakingPlayers = new ArrayList<>();
+
+    @SubscribeEvent
+    public void serverTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == Phase.END) {
+            MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+            if (server != null){
+                SleepHelper.updateSleepingPlayers(server);
+            }
+        }
+    }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void playerSleep(PlayerSleepInBedEvent event) {
@@ -35,53 +46,29 @@ public class ModEventHandler {
             return;
         }
 
-        LogHelper.dev("Sleep");
-
-//        SleepResult result = SleepHelper.trySleep(player, event.getPos());
-//        if (result == EntityPlayer.SleepResult.OK)
-//        {
-//            player.addStat(StatList.SLEEP_IN_BED);
-//            Packet<?> packet = new SPacketUseBed(player, event.getPos());
-//            player.getServerWorld().getEntityTracker().sendToTracking(player, packet);
-//            player.connection.setPlayerLocation(player.posX, player.posY, player.posZ, player.rotationYaw, player.rotationPitch);
-//            player.connection.sendPacket(packet);
-//            CriteriaTriggers.SLEPT_IN_BED.trigger(player);
-//        }
-//
-//        if (result != EntityPlayer.SleepResult.OK)
-//        {
-//            if (result == EntityPlayer.SleepResult.NOT_POSSIBLE_NOW)
-//            {
-//                player.sendStatusMessage(new TextComponentTranslation("tile.bed.noSleep"), true);
-//            }
-//            else if (result == EntityPlayer.SleepResult.NOT_SAFE)
-//            {
-//                player.sendStatusMessage(new TextComponentTranslation("tile.bed.notSafe"), true);
-//            }
-//            else if (result == EntityPlayer.SleepResult.TOO_FAR_AWAY)
-//            {
-//                player.sendStatusMessage(new TextComponentTranslation("tile.bed.tooFarAway"), true);
-//            }
-//        }
-
-//        event.setResult(SleepResult.OTHER_PROBLEM);
-
-//        player.spawnShoulderEntities(); //Protected
+        SleepHelper.playerTrySleep(player, event.getPos());
+        event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void playerWakeUp(PlayerWakeUpEvent event) {
-        EntityPlayer player = event.getEntityPlayer();
-        if (player.world.isRemote || !(player instanceof EntityPlayerMP)) {
-            return;
-        }
-
-        long time = player.world.getWorldTime() % 24000L;
-        if (time >= 0 && time <= 6000) {
-            SleepHelper.onPlayerWakeUp((EntityPlayerMP) player);
-//            wakingPlayers.add(player.getName());
-        }
+        SleepHelper.onPlayerWakeUp(event.getEntityPlayer());
     }
+
+//Old event ^new stuff
+//    @SubscribeEvent(priority = EventPriority.LOW)
+//    public void playerWakeUp(PlayerWakeUpEvent event) {
+//        EntityPlayer player = event.getEntityPlayer();
+//        if (player.world.isRemote || !(player instanceof EntityPlayerMP)) {
+//            return;
+//        }
+//
+//        long time = player.world.getWorldTime() % 24000L;
+//        if (time >= 0 && time <= 6000) {
+//            SleepHelper.onPlayerWakeUp((EntityPlayerMP) player);
+//        }
+//    }
+
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void playerSetSpawn(PlayerSetSpawnEvent event) {
@@ -99,7 +86,11 @@ public class ModEventHandler {
 
     @SubscribeEvent
     public void playerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+        if (event.phase == Phase.START) {
+            SleepHelper.updateSleepState(event.player);
+            return;
+        }
+
         EntityPlayer player = event.player;
         if (player instanceof EntityPlayerMP) {
             PlayerTickHelper tickHandler = playerTickHandlerMap.get(player.getName());
@@ -122,6 +113,8 @@ public class ModEventHandler {
                 playerTickHandlerMap.remove(player.getName());
             }
         }
+        SleepHelper.playersAsleep.remove(player.getName());
+        SleepHelper.playersVoted.remove(player.getName());
     }
 
     @SubscribeEvent

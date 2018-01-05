@@ -51,7 +51,7 @@ public class CommandPlayer extends CommandBase {
         }
         else if (args.length >= 1 && args[0].equals("clear_negative")) {
             data.setTimeAway(0);
-            data.setTimeSinceSleep(0);
+            data.setTimeAwake(0);
             ChatHelper.message(player, "Your time away and time since sleep have been reset to 0", GREEN);
             if (sender != player) {
                 ChatHelper.message(player, player.getName() + "'s time away and time since sleep have been reset to 0", GREEN);

@@ -66,6 +66,11 @@ public class ModConfig {
     public static double homesickReductionRate = 5;
     //Sets how many minutes are added to the time away counter when the player sleeps away from home.
     public static double homesickSleepAway = 20;
+    //sets how long the player must be awake in minutes before they can sleep.
+    public static int timeAwakeToSleep = 15;
+    //Sets the percentage of players on the server that must sleep in order to skip the night. Default: 70%
+    public static double playersReqSkipNight = 0.7;
+
     //sets whether or not the potion icon in the top right of the screen will render for effects caused by being at home.
     public static int homeEffectsRender = 0;
     //sets whether or not the potion icon in the top right of the screen will render for effects caused by being homesick.
@@ -146,7 +151,14 @@ public class ModConfig {
         b.desc("Allows you to set the minutes awake to something other than 0 if the player sleeps outside their home (so they will get tired again faster)");
 
         b.addDouble("homesickSleepAway", () -> homesickSleepAway, value -> homesickSleepAway = value);
-        b.desc("ets how many minutes are added to the time away counter when the player sleeps away from home.");
+        b.desc("Sets how many minutes are added to the time away counter when the player sleeps away from home.");
+
+        b.addInt("timeAwakeToSleep", () -> timeAwakeToSleep, value -> timeAwakeToSleep = value);
+        b.desc("Sets how long the player must be awake in minutes before they can sleep.");
+
+        b.addDouble("playersReqSkipNight", () -> homesickSleepAway, value -> homesickSleepAway = value);
+        b.desc("Sets the percentage of players on the server that must sleep in order to skip the night. Default: 70%");
+
 
 //        b.addInfo("########## Effect Config ##########");
 //

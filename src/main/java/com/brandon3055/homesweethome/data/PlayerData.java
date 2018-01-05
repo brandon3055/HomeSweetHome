@@ -113,7 +113,7 @@ public class PlayerData {
     /**
      * @param timeSinceSleep Sets the number of minutes since the player last slept.
      */
-    public void setTimeSinceSleep(double timeSinceSleep) {
+    public void setTimeAwake(double timeSinceSleep) {
         this.timeSinceSleep = timeSinceSleep;
         markDirty();
     }

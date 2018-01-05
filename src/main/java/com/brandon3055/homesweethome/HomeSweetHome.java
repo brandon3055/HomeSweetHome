@@ -2,6 +2,7 @@ package com.brandon3055.homesweethome;
 
 import com.brandon3055.brandonscore.BrandonsCore;
 import com.brandon3055.homesweethome.command.CommandHSH;
+import com.brandon3055.homesweethome.helpers.SleepHelper;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -40,6 +41,8 @@ public class HomeSweetHome {
     @Mod.EventHandler
     public void worldClose(FMLServerStoppedEvent event) {
         ModEventHandler.playerTickHandlerMap.clear();
+        SleepHelper.playersAsleep.clear();
+        SleepHelper.playersVoted.clear();
     }
 
     @Mod.EventHandler
