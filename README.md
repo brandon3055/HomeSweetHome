@@ -89,6 +89,23 @@ Home sickness and tiredness stats will be shown in a separate hud when those eff
 There is also an unassigned by default key bind to show this info. Pressing CTRL while holding this key bind allows you
 to move the hud elements.
 
+### Sleeping
+This mod completely overhauls the normal sleep mechanic. 
+First of all players can sleep at any time as long as they have been awake for at least 15 minutes (configurable)
+And they can not sleep if they are not tired even at nigh.
+When a player sleeps during the day they will automatically wake up fully rested once the normal sleep time of 5 seconds passes.
+If it is night time then instead of waking up immediately they will be given the option to wake up or wait for more players sleep / vote
+to skip the night.
+Once more than the configured percentage of players on the server (default 70%) are sleeping the night will be skipped.
+If a player is unable to sleep at night because they are not tired they will be given an option to vote for day
+via a clickable message in chat. This counts them towards the total number of players sleeping.
+
+Players can now also sleep in all dimensions though it should be noted that bed explosions are only disabled
+for the vanilla beds. Mod beds that also implement explosions will likely still explode.
+When night is skipped it is skipped for every dimension where at at least 1 players is sleeping.
+The end and nether are considered as always day. Whether or not time skipping works for mod dimension 
+will depend on the mod.
+
 ## Commands
 
 This mod uses some fairly advanced commands to help make the configuration process as easy as possible.

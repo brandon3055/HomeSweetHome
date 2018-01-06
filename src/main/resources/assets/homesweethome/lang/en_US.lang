@@ -56,3 +56,13 @@ hsh.msg.sleep.notTired2=You're not tired enough to sleep yet! Try again in %s mi
 hsh.msg.sleep.voteCanceled=All players have stopped sleeping. Vote has been canceled.
 hsh.msg.sleep.countReadyToSkip=There is now %s (%s%%) player ready to skip the night. %s more required.
 hsh.msg.sleep.countReadyToSkip2=There are now %s (%s%%) players ready to skip the night. %s more required.
+hsh.msg.sleep.clickToVoteToSkip=[Click this message to vote to skip night]
+hsh.msg.sleep.clickToVote=Click to vote
+hsh.msg.sleep.clickToWakeUpEarly=You are now fully rested! You can click this link to wake up now or wait for more players to sleep or vote in order to skip night.
+hsh.msg.sleep.clickToWakeUp=Click to wake up.
+hsh.msg.sleep.wakeUp=Wake Up
+hsh.msg.sleep.youCanWakeUpOrWait=You are now fully rested! You can choose to wake up now or wait for more people to sleep / vote to skip the night.
+hsh.msg.sleep.sleepToSkipNight=You should consider sleeping to skip the night
+
+hsh.msg.sleep.errorNotReadyToWakeUp=Your not ready to wake up yet! The fact that your seeing this message may indicate that the server is lagging a little.
+hsh.msg.sleep.youMustSleepCantVote=Voting is only allowed if you are not tired enough to sleep.

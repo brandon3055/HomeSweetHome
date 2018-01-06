@@ -18,7 +18,7 @@ public class ChatBuilder {
             style.setColor(colour);
         }
         if (hoverAction != null) {
-            style.setHoverEvent(new HoverEvent(hoverAction, new TextComponentString(hover)));
+            style.setHoverEvent(new HoverEvent(hoverAction, translate ? new TextComponentTranslation(hover) : new TextComponentString(hover)));
         }
         if (action != null) {
             style.setClickEvent(new ClickEvent(action, command));

@@ -6,13 +6,12 @@ import com.brandon3055.homesweethome.HomeSweetHome;
 import com.brandon3055.homesweethome.ModConfig;
 import com.brandon3055.homesweethome.data.PlayerData;
 import com.brandon3055.homesweethome.data.PlayerHome;
+import com.brandon3055.homesweethome.network.PacketDispatcher;
 import com.brandon3055.homesweethome.network.PacketSyncClient;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
@@ -20,6 +19,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -54,6 +54,74 @@ public class ClientEventHandler {
 
     public static void init() {
         ClientRegistry.registerKeyBinding(homeInfo);
+    }
+
+    @SubscribeEvent
+    public void guiOpen(GuiScreenEvent.InitGuiEvent event) {
+        if (event.getGui() instanceof GuiSleepMP) {
+            GuiSleepMP gui = (GuiSleepMP) event.getGui();
+            gui.buttonList.clear();
+            gui.labelList.clear();
+            gui.buttonList.add(new GuiButton(99, gui.width / 2 - 100, gui.height - 40, "") {
+
+                @Override
+                public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+                    String text = mc.player.isPlayerFullyAsleep() ? I18n.format("hsh.msg.sleep.wakeUp") : I18n.format("multiplayer.stopSleeping");
+                    if (this.visible) {
+                        FontRenderer fontrenderer = mc.fontRenderer;
+                        mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
+                        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                        this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+                        int i = this.getHoverState(this.hovered);
+                        GlStateManager.enableBlend();
+                        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+                        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+                        this.drawTexturedModalRect(this.x, this.y, 0, 46 + i * 20, this.width / 2, this.height);
+                        this.drawTexturedModalRect(this.x + this.width / 2, this.y, 200 - this.width / 2, 46 + i * 20, this.width / 2, this.height);
+                        this.mouseDragged(mc, mouseX, mouseY);
+                        int j = 14737632;
+
+                        if (packedFGColour != 0) {
+                            j = packedFGColour;
+                        }
+                        else if (!this.enabled) {
+                            j = 10526880;
+                        }
+                        else if (this.hovered) {
+                            j = 16777120;
+                        }
+
+                        this.drawCenteredString(fontrenderer, text, this.x + this.width / 2, this.y + (this.height - 8) / 2, j);
+                    }
+                }
+
+                @Override
+                public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+                    boolean press = super.mousePressed(mc, mouseX, mouseY);
+                    if (press) {
+                        PacketDispatcher.wakeUpPlayer(mc.player.isPlayerFullyAsleep());
+                    }
+                    return press;
+                }
+            });
+            GuiLabel label;
+            gui.labelList.add(label = new GuiLabel(gui.mc.fontRenderer, 42, (gui.width / 2) - 150, 50, 300, 26, 0) {
+                @Override
+                public void drawLabel(Minecraft mc, int mouseX, int mouseY) {
+                    visible = mc.player.isPlayerFullyAsleep();
+                    if (visible) {
+                        GlStateManager.enableBlend();
+                        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+                        this.drawLabelBackground(mc, mouseX, mouseY);
+                        GuiHelper.drawCenteredSplitString(gui.mc.fontRenderer, I18n.format("hsh.msg.sleep.youCanWakeUpOrWait"), this.x + this.width / 2, y + 5, width, 0x00FF00, false);
+                    }
+                }
+            });
+            label.setCentered();
+            label.backColor = 0xFF000000;
+            label.brColor = 0xFF00FFFF;
+            label.ulColor = 0xFF004444;
+        }
     }
 
     @SubscribeEvent

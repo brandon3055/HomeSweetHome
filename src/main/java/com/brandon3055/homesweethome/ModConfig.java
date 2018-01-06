@@ -156,7 +156,7 @@ public class ModConfig {
         b.addInt("timeAwakeToSleep", () -> timeAwakeToSleep, value -> timeAwakeToSleep = value);
         b.desc("Sets how long the player must be awake in minutes before they can sleep.");
 
-        b.addDouble("playersReqSkipNight", () -> homesickSleepAway, value -> homesickSleepAway = value);
+        b.addDouble("playersReqSkipNight", () -> playersReqSkipNight, value -> playersReqSkipNight = value);
         b.desc("Sets the percentage of players on the server that must sleep in order to skip the night. Default: 70%");
 
 

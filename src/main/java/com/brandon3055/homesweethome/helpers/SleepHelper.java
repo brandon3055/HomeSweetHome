@@ -5,9 +5,11 @@ import com.brandon3055.brandonscore.utils.DataUtils;
 import com.brandon3055.brandonscore.utils.Utils;
 import com.brandon3055.homesweethome.HomeSweetHome;
 import com.brandon3055.homesweethome.ModConfig;
+import com.brandon3055.homesweethome.command.ChatBuilder;
 import com.brandon3055.homesweethome.data.PlayerData;
 import com.brandon3055.homesweethome.data.PlayerHome;
 import com.brandon3055.homesweethome.network.PacketMakeHome;
+import com.google.common.base.Predicate;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.state.IBlockState;
@@ -25,12 +27,17 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProviderEnd;
+import net.minecraft.world.WorldProviderHell;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.brandon3055.homesweethome.helpers.HSHEventHelper.Event.*;
+import static net.minecraft.util.text.TextFormatting.BLUE;
 import static net.minecraft.util.text.TextFormatting.RED;
 
 /**
@@ -62,12 +69,12 @@ public class SleepHelper {
         boolean allAsleep = true;
         for (EntityPlayerMP player : players) {
             if (player.isPlayerFullyAsleep() && playersAsleep.contains(player.getName())) {
-                if (player.world.isDaytime()) {
+                if (isDay(player.world)) {
                     onPlayerCompleteSleep(player);
-                    wakePlayer(player, false, false, false);
+                    wakePlayer(player, true, true, false);
                 }
             }
-            else if (playersAsleep.contains(player.getName())){
+            else if (playersAsleep.contains(player.getName())) {
                 allAsleep = false;
             }
         }
@@ -87,16 +94,41 @@ public class SleepHelper {
                     worlds.add(player.world);
                 }
 
-                onPlayerCompleteSleep(player);
-                wakePlayer(player, false, false, false);
+                if (playersAsleep.contains(player.getName())) {
+                    onPlayerCompleteSleep(player);
+                    wakePlayer(player, false, false, false);
+                }
             }
+
+            for (World world : worlds) {
+                if (world.getGameRules().getBoolean("doDaylightCycle")) {
+                    long i = world.getWorldTime() + 24000L;
+                    world.setWorldTime(i - i % 24000L);
+                }
+            }
+
             playersAsleep.clear();
             playersVoted.clear();
             readyToSkip = 0;
         }
-        else if (readyToSkip > playersReadyToSkip) {
+        else if (readyToSkip > playersReadyToSkip && readyToSkip > 0) {
             double percent = Utils.round((readyToSkip / (double) players.size()) * 100, 100);
-            playerList.sendMessage(new TextComponentTranslation("hsh.msg.sleep.countReadyToSkip" + (readyToSkip == 1 ? "" : "2"), readyToSkip, percent, required - readyToSkip));
+            for (EntityPlayerMP player : players) {
+                player.sendMessage(new TextComponentTranslation("hsh.msg.sleep.countReadyToSkip" + (readyToSkip == 1 ? "" : "2"), readyToSkip, percent, required - readyToSkip));
+                if (!playersVoted.contains(player.getName()) && !playersAsleep.contains(player.getName())) {
+                    PlayerData data = PlayerData.getPlayerData(player);
+                    if (data != null && data.getTimeAwake() < ModConfig.timeAwakeToSleep) {
+                        player.sendMessage(ChatBuilder.buildComponent(BLUE, "hsh.msg.sleep.clickToVoteToSkip", true, HoverEvent.Action.SHOW_TEXT, "hsh.msg.sleep.clickToVote", ClickEvent.Action.RUN_COMMAND, "/home_sweet_home voteday"));
+                    }
+                    else {
+                        player.sendMessage(ChatBuilder.buildComponent(BLUE, "hsh.msg.sleep.sleepToSkipNight", true));
+                    }
+                }
+                else if (player.isPlayerFullyAsleep() && playersAsleep.contains(player.getName())) {
+                    player.sendMessage(ChatBuilder.buildComponent(BLUE, "hsh.msg.sleep.clickToWakeUpEarly", true, HoverEvent.Action.SHOW_TEXT, "hsh.msg.sleep.clickToWakeUp", ClickEvent.Action.RUN_COMMAND, "/home_sweet_home wakeup"));
+
+                }
+            }
         }
 
         playersReadyToSkip = readyToSkip;
@@ -166,6 +198,15 @@ public class SleepHelper {
         }
     }
 
+    public static boolean isDay(World world) {
+        if (world.provider instanceof WorldProviderHell || world.provider instanceof WorldProviderEnd) {
+            return true;
+        }
+        else {
+            return world.isDaytime() || !world.getGameRules().getBoolean("doDaylightCycle");
+        }
+    }
+
     //region sleep Events
 
     /**
@@ -188,6 +229,14 @@ public class SleepHelper {
     }
 
     public static void onPlayerVoted(EntityPlayer player) {
+        PlayerData data = PlayerData.getPlayerData(player);
+        if (data == null) return;
+
+        if (data.getTimeAwake() >= ModConfig.timeAwakeToSleep) {
+            ChatHelper.translate(player, "hsh.msg.sleep.youMustSleepCantVote", RED);
+            return;
+        }
+
         if (!playersVoted.contains(player.getName()) && !playersAsleep.contains(player.getName())) {
             playersVoted.add(player.getName());
         }
@@ -214,10 +263,10 @@ public class SleepHelper {
             }
 
             if (!player.world.isRemote) {
-                if (!player.isInBed()) { //TODO AT is in bed
+                if (!player.isInBed()) {
                     wakePlayer(player, true, true, false);
                 }
-//                else if (player.world.isDaytime()) {
+//                else if (player.world.isDaytime()) { //Allow the player to sleep during the day.
 //                    player.wakeUpPlayer(false, true, true);
 //                }
             }
@@ -239,8 +288,6 @@ public class SleepHelper {
         if (data == null) {
             return;
         }
-
-        data.setTimeAwake(100);
 
         //Don't allow the player to sleep if they are not tired enough.
         if (data.getTimeAwake() < ModConfig.timeAwakeToSleep) {
@@ -292,14 +339,13 @@ public class SleepHelper {
 //                //return SleepResult.NOT_POSSIBLE_NOW;
 //            }
 
-            if (!player.bedInRange(bedPos, enumfacing))
-            {
+            if (!player.bedInRange(bedPos, enumfacing)) {
                 return SleepResult.TOO_FAR_AWAY;
             }
 
             double d0 = 8.0D;
-            double d1 = 5.0D; // SleepEnemyPredicate private //EntityPlayer.SleepEnemyPredicate private
-            List<EntityMob> list = player.world.<EntityMob>getEntitiesWithinAABB(EntityMob.class, new AxisAlignedBB((double) bedPos.getX() - 8.0D, (double) bedPos.getY() - 5.0D, (double) bedPos.getZ() - 8.0D, (double) bedPos.getX() + 8.0D, (double) bedPos.getY() + 5.0D, (double) bedPos.getZ() + 8.0D), new EntityPlayer.SleepEnemyPredicate(player));
+            double d1 = 5.0D;
+            List<EntityMob> list = player.world.<EntityMob>getEntitiesWithinAABB(EntityMob.class, new AxisAlignedBB((double) bedPos.getX() - 8.0D, (double) bedPos.getY() - 5.0D, (double) bedPos.getZ() - 8.0D, (double) bedPos.getX() + 8.0D, (double) bedPos.getY() + 5.0D, (double) bedPos.getZ() + 8.0D), new SleepEnemyPredicate(player));
 
             if (!list.isEmpty()) {
                 return SleepResult.NOT_SAFE;
@@ -344,6 +390,19 @@ public class SleepHelper {
         player.wakeUpPlayer(immediately, updateWorldFlag, setSpawn);
         playersAsleep.remove(player.getName());
         playersVoted.remove(player.getName());
+    }
+
+
+    public static class SleepEnemyPredicate implements Predicate<EntityMob> {
+        private final EntityPlayer player;
+
+        public SleepEnemyPredicate(EntityPlayer playerIn) {
+            this.player = playerIn;
+        }
+
+        public boolean apply(EntityMob p_apply_1_) {
+            return p_apply_1_.isPreventingPlayerRest(this.player);
+        }
     }
 
     //endregion
