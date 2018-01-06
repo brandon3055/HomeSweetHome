@@ -107,6 +107,7 @@ jar {
 
 task asmJar(type: Jar, dependsOn: reobfJar) {
     classifier = 'asm'
+    manifest asmManifest
     from(zipTree(jar.archivePath)) {
         include "**/com/brandon3055/homesweethome/asm/*.class"
         include "**/assets/homesweethome/asm/**"
