@@ -30,7 +30,7 @@ public class Transformer implements IClassTransformer {
 
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] basicClass) {
-		return transformer.transform(transformedName, basicClass);
+		return transformer.transform(name, basicClass);
 	}
 
 	public static class PlayerUpdateTransformer extends MethodTransformer {
