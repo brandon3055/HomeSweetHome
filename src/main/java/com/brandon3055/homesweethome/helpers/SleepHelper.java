@@ -9,6 +9,8 @@ import com.brandon3055.homesweethome.command.ChatBuilder;
 import com.brandon3055.homesweethome.data.PlayerData;
 import com.brandon3055.homesweethome.data.PlayerHome;
 import com.brandon3055.homesweethome.network.PacketMakeHome;
+import com.brandon3055.homesweethome.util.DelayedTask;
+import com.brandon3055.homesweethome.integration.IntegrationHelper;
 import com.google.common.base.Predicate;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.BlockHorizontal;
@@ -158,7 +160,11 @@ public class SleepHelper {
                 //apply effects
                 EffectHelper.sleepHasHome(player, data, home, true);
 
+                //Fire event
                 HSHEventHelper.fireEvent(SLEEP_HOME, player, data);
+
+                //Update Spawn
+                home.setSpawn(new BlockPos(player));
             }
             else { //Slept outside permanent home
                 //Update sleep time
@@ -174,6 +180,7 @@ public class SleepHelper {
                 //Apply effects
                 EffectHelper.sleepHasHome(player, data, home, false);
 
+                //Fire event
                 HSHEventHelper.fireEvent(SLEEP_AWAY, player, data);
             }
         }
@@ -183,7 +190,7 @@ public class SleepHelper {
             PlayerHome home = data.getHome();
             if (home == null || !home.isPlayerInHome(player)) {
                 boolean first = home == null;
-                home = data.setHome(new Vec3d(player.posX, player.posY, player.posZ));
+                home = data.setHome(new Vec3d(player.posX, player.posY, player.posZ), player.dimension);
                 HSHEventHelper.fireEvent(first ? FIRST_HOME : MOVE_HOME, player, data);
             }
             else {
@@ -193,7 +200,7 @@ public class SleepHelper {
             home.homeliness.add(ModConfig.gainPerSleep);
             EffectHelper.sleepNoHome(player, data);
             if (home.homeliness.getLevel() >= ModConfig.levelForPerm) {
-                HomeSweetHome.network.sendTo(new PacketMakeHome(), player);
+                DelayedTask.run(3, () -> HomeSweetHome.network.sendTo(new PacketMakeHome(), player));
             }
         }
     }
@@ -305,6 +312,7 @@ public class SleepHelper {
             player.connection.sendPacket(packet);
             CriteriaTriggers.SLEPT_IN_BED.trigger(player);
             onPlayerStartSleeping(player);
+            IntegrationHelper.handleSleepingBag(player, bedPos);
         }
 
         if (result != SleepResult.OK) {
@@ -391,7 +399,6 @@ public class SleepHelper {
         playersAsleep.remove(player.getName());
         playersVoted.remove(player.getName());
     }
-
 
     public static class SleepEnemyPredicate implements Predicate<EntityMob> {
         private final EntityPlayer player;

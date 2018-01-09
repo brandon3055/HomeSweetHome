@@ -1,12 +1,21 @@
 package com.brandon3055.homesweethome;
 
+import com.brandon3055.brandonscore.lib.TeleportUtils;
+import com.brandon3055.brandonscore.utils.DataUtils;
 import com.brandon3055.homesweethome.data.PlayerData;
+import com.brandon3055.homesweethome.data.PlayerHome;
 import com.brandon3055.homesweethome.helpers.PlayerTickHelper;
 import com.brandon3055.homesweethome.helpers.SleepHelper;
 import com.brandon3055.homesweethome.network.PacketDispatcher;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
@@ -18,7 +27,9 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,21 +65,6 @@ public class ModEventHandler {
     public void playerWakeUp(PlayerWakeUpEvent event) {
         SleepHelper.onPlayerWakeUp(event.getEntityPlayer());
     }
-
-//Old event ^new stuff
-//    @SubscribeEvent(priority = EventPriority.LOW)
-//    public void playerWakeUp(PlayerWakeUpEvent event) {
-//        EntityPlayer player = event.getEntityPlayer();
-//        if (player.world.isRemote || !(player instanceof EntityPlayerMP)) {
-//            return;
-//        }
-//
-//        long time = player.world.getWorldTime() % 24000L;
-//        if (time >= 0 && time <= 6000) {
-//            SleepHelper.onPlayerWakeUp((EntityPlayerMP) player);
-//        }
-//    }
-
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void playerSetSpawn(PlayerSetSpawnEvent event) {
@@ -127,5 +123,45 @@ public class ModEventHandler {
         if (event.player instanceof EntityPlayerMP && event.player.getServer() != null && event.player.getServer().isDedicatedServer()) {
             PacketDispatcher.sendConfigToClient((EntityPlayerMP) event.player);
         }
+    }
+
+    @SubscribeEvent
+    public void playerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        EntityPlayer player = event.player;
+        PlayerData data = PlayerData.getPlayerData(player);
+
+        if (!(player instanceof EntityPlayerMP) || data == null || !data.hasHome()) {
+            return;
+        }
+
+        PlayerHome home = data.getHome();
+        BlockPos pos = home.getSpawn();
+        MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        World world = server.getWorld(home.getDimension());
+
+        List<BlockPos> validBlocks = new ArrayList<>();
+        Iterable<BlockPos> candidates = BlockPos.getAllInBox(pos.add(-8, -6, -8), pos.add(8, 6, 8));
+        DataUtils.forEachMatch(candidates, candidate -> isValidSpawn(candidate, world), validBlocks::add);
+
+        if (validBlocks.size() == 0) {
+            player.sendMessage(new TextComponentTranslation("hsh.msg.sleep.noSafePlaceToSpawn").setStyle(new Style().setColor(TextFormatting.RED)));
+            return;
+        }
+
+        BlockPos closest = validBlocks.get(0);
+        double dist = Integer.MAX_VALUE;
+        for (BlockPos candidate : validBlocks) {
+            double d = candidate.distanceSq(pos);
+            if (d < dist) {
+                closest = candidate;
+                dist = d;
+            }
+        }
+
+        TeleportUtils.teleportEntity(player, home.getDimension(), closest.getX() + 0.5, closest.getY() + 0.2, closest.getZ() + 0.5);
+    }
+
+    private boolean isValidSpawn(BlockPos pos, World world) {
+        return world.isAirBlock(pos) && world.isAirBlock(pos.up()) && world.isSideSolid(pos.down(), EnumFacing.UP);
     }
 }

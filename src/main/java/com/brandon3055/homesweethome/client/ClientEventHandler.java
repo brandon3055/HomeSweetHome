@@ -241,9 +241,21 @@ public class ClientEventHandler {
             int seconds = (int) ((data.getTimeAwake() % 1) * 60);
             String mins = "(" + (minutes > 9 ? minutes : "0" + minutes) + ":" + (seconds > 9 ? seconds : "0" + seconds) + ")";
             lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.daysWithoutSleep") + TextFormatting.RESET + " " + data.getDaysAwakeRounded() + (shiftDown ? " " + mins : ""), daysSleepColour);
+            if (hudKeyDown) {
+                double time = Math.max(0, ModConfig.timeAwakeToSleep - data.getTimeAwake());
+                minutes = (int) time;
+                seconds = (int) ((time % 1) * 60);
+                mins = (minutes > 9 ? minutes : "0" + minutes) + ":" + (seconds > 9 ? seconds : "0" + seconds);
+                lines.put(I18n.format("hsh.hud.canSleepIn", mins), 0xFFFFFF);
+            }
         }
         if (drawDaysAway || drawTimeSinceSleep) {
-            lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.distFromHome" + ((int) dist > 1 || (int) dist == 0 ? "2" : ""), RESET + "" + (int) dist + "" + WHITE), 0xFFAA00);
+            if (dist == Integer.MAX_VALUE) {
+                lines.put(I18n.format("hsh.hud.veryFarFromHome"), 0xFF5000);
+            }
+            else {
+                lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.distFromHome" + ((int) dist > 1 || (int) dist == 0 ? "2" : ""), RESET + "" + (int) dist + "" + WHITE), 0xFFAA00);
+            }
         }
 
         if (lines.isEmpty()) return;

@@ -278,6 +278,10 @@ public class EffectHelper {
         }
 
         public EffectTrigger tryApply(Source source, EntityPlayerMP player, PlayerData data) {
+            if (player.capabilities.isCreativeMode) {
+                return null;
+            }
+
             Potion potion = getPotion();
             if (potion == null) {
                 LogHelper.bigError("Detected invalid potion handler! " + this);

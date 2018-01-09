@@ -1,6 +1,3 @@
-#Stolen form AE2 Repo. :D
-# exclude all
-
 /*
 
 # Include important folders
@@ -24,5 +21,4 @@
 
 # Include Important Folders
 !src/
-!libs/
 !archive

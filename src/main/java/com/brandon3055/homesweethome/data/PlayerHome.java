@@ -14,6 +14,8 @@ public class PlayerHome {
 
     private PlayerData playerData;
     private Vec3d pos = new Vec3d(0, 0, 0);
+    private BlockPos spawn = new BlockPos(0, -1, 0);
+    private int dimension;
     private boolean isPermanent = false;
     public final Homeliness homeliness = new Homeliness(this);
 
@@ -21,9 +23,11 @@ public class PlayerHome {
         this.playerData = playerData;
     }
 
-    protected PlayerHome(PlayerData playerData, Vec3d pos) {
+    protected PlayerHome(PlayerData playerData, Vec3d pos, int dimension) {
         this.playerData = playerData;
         this.pos = pos;
+        this.spawn = new BlockPos(pos);
+        this.dimension = dimension;
     }
 
     //region Setters / Getters
@@ -50,6 +54,17 @@ public class PlayerHome {
         return pos;
     }
 
+    public BlockPos getSpawn() {
+        if (spawn.getY() == -1) {
+            return new BlockPos(pos);
+        }
+        return spawn;
+    }
+
+    public int getDimension() {
+        return dimension;
+    }
+
     public double getHomeRadius() {
         return ModConfig.baseHomeRadius + (homeliness.getLevel() * ModConfig.homeRadiusMultiplier);
     }
@@ -65,10 +80,12 @@ public class PlayerHome {
      * Expensive call use sparingly.
      */
     public double getDistance(EntityPlayer player) {
+        if (player.dimension != dimension) return Integer.MAX_VALUE;
         return player.getDistance(pos.x, pos.y, pos.z);
     }
 
     public double getDistFromRadius(EntityPlayer player) {
+        if (player.dimension != dimension) return Integer.MAX_VALUE;
         return player.getDistance(pos.x, pos.y, pos.z) - getHomeRadius();
     }
 
@@ -83,6 +100,7 @@ public class PlayerHome {
      * This is the preferred way to check if a player is in their home as it is a lot cheaper than getDistance
      */
     public boolean isPlayerInHome(EntityPlayer player) {
+        if (player.dimension != dimension) return false;
         double dist = player.getDistanceSq(pos.x, pos.y, pos.z);
         double rad = getHomeRadius();
         return dist <= rad * rad;
@@ -90,6 +108,11 @@ public class PlayerHome {
 
     public PlayerData getPlayerData() {
         return playerData;
+    }
+
+    public void setSpawn(BlockPos spawn) {
+        this.spawn = spawn;
+        markDirty();
     }
 
     //endregion
@@ -103,7 +126,17 @@ public class PlayerHome {
     protected PlayerHome loadFromNBT(NBTTagCompound compound) {
         homeliness.loadFromNBT(compound);
         pos = new Vec3d(compound.getDouble("PosX"), compound.getDouble("PosY"), compound.getDouble("PosZ"));
+        dimension = compound.getInteger("Dimension");
         isPermanent = compound.getBoolean("Permanent");
+
+        if (compound.hasKey("Spawn", 11) && compound.getIntArray("Spawn").length == 3) {
+            int[] p = compound.getIntArray("Spawn");
+            spawn = new BlockPos(p[0], p[1], p[2]);
+        }
+        else {
+            spawn = new BlockPos(pos);
+        }
+
         return this;
     }
 
@@ -112,7 +145,9 @@ public class PlayerHome {
         compound.setDouble("PosX", pos.x);
         compound.setDouble("PosY", pos.y);
         compound.setDouble("PosZ", pos.z);
+        compound.setInteger("Dimension", dimension);
         compound.setBoolean("Permanent", isPermanent);
+        compound.setIntArray("Spawn", new int[] {spawn.getX(), spawn.getY(), spawn.getZ()});
         return compound;
     }
 

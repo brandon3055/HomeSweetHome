@@ -61,8 +61,8 @@ public class PlayerData {
         return home;
     }
 
-    public PlayerHome setHome(Vec3d pos) {
-        home = new PlayerHome(this, pos);
+    public PlayerHome setHome(Vec3d pos, int dimension) {
+        home = new PlayerHome(this, pos, dimension);
         markDirty();
         return home;
     }

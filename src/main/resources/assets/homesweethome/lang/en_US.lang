@@ -29,13 +29,15 @@ hsh.hud.radius=Home Radius: %s Blocks
 hsh.hud.distance=You are %s blocks from the center of your home.
 hsh.hud.levelHere=Level Here:
 
-# Effects
+# Effects Hud
 hsh.hud.youAreHomeSick=You are home sick!
 hsh.hud.daysAwayFromHome=Days away from home:
 hsh.hud.youAreTired=You are tired!
 hsh.hud.daysWithoutSleep=Days without sleep:
 hsh.hud.distFromHome=You are %s block from home
 hsh.hud.distFromHome2=You are %s blocks from home
+hsh.hud.veryFarFromHome=You are very far from home!
+hsh.hud.canSleepIn=You can sleep in %s
 
 # Gui
 hsh.gui.makeHome.youCanNowMakeThisYourHome=You can now make this location your permanent home!
@@ -49,6 +51,7 @@ hsh.gui.moveElements.clickAndDrag=Click and drag the marked anchor points to mov
 # Other
 key.showHomeInfo=Show home info
 hsh.hud.shiftToMoveElements=Hold CTRL to move hud elements
+hsh.msg.sleep.noSafePlaceToSpawn=Did not find a safe place to spawn you in you home location.
 
 # Sleep messages
 hsh.msg.sleep.notTired=You're not tired enough to sleep yet! Try again in %s minute.
