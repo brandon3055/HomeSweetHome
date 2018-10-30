@@ -1,9 +1,9 @@
 package com.brandon3055.homesweethome.client;
 
-import com.brandon3055.brandonscore.client.gui.modulargui.IModularGui;
-import com.brandon3055.brandonscore.client.gui.modulargui.MGuiElementBase;
-import com.brandon3055.brandonscore.client.gui.modulargui.ModularGuiScreen;
-import com.brandon3055.brandonscore.client.gui.modulargui.modularelements.MGuiPopUpDialog;
+import com.brandon3055.brandonscore.client.gui.modulargui_old.IModularGui;
+import com.brandon3055.brandonscore.client.gui.modulargui_old.MGuiElementBase;
+import com.brandon3055.brandonscore.client.gui.modulargui_old.ModularGuiScreen;
+import com.brandon3055.brandonscore.client.gui.modulargui_old.modularelements.MGuiPopUpDialog;
 import com.brandon3055.brandonscore.client.utils.GuiHelper;
 import com.brandon3055.homesweethome.ModConfig;
 import net.minecraft.client.Minecraft;

@@ -70,6 +70,9 @@ public class ModConfig {
     public static int timeAwakeToSleep = 15;
     //Sets the percentage of players on the server that must sleep in order to skip the night. Default: 70%
     public static double playersReqSkipNight = 0.7;
+    //For new players sets how long in minutes before HSH mechanics kick in.
+    public static int gracePeriod = 20;
+
 
     //sets whether or not the potion icon in the top right of the screen will render for effects caused by being at home.
     public static int homeEffectsRender = 0;
@@ -81,6 +84,16 @@ public class ModConfig {
     public static int sleepAwayEffectsRender = 0;
     //sets whether or not the potion icon in the top right of the screen will render for effects caused by being sleeping at home.
     public static int sleepHomeEffectsRender = 0;
+
+    //Enables or disables chunk loading for homes.
+    public static boolean enableChunkLoading = true;
+    //Sets the chunk loading radius. Radius will be homeliness level multiplied by this value. This is on top of the base loading radius.
+    public static double loadRadiusMultiplier = 0.25;
+    //Sets the base chunk loading radius.
+    public static int baseLoadingRadius = 1;
+    //Enables or disables chunk loading while home owner is offline.
+    public static boolean offlineLoading = false;
+
 
     public static List<ConfigProperty> properties = new LinkedList<>();
     public static Map<String, ConfigProperty> propertyMap = new HashMap<>();
@@ -159,6 +172,23 @@ public class ModConfig {
         b.addDouble("playersReqSkipNight", () -> playersReqSkipNight, value -> playersReqSkipNight = value);
         b.desc("Sets the percentage of players on the server that must sleep in order to skip the night. Default: 70%");
 
+        b.addInfo("########## Chunk Loading ##########");
+
+        b.addInt("enableChunkLoading", () -> enableChunkLoading ? 1 : 0, value -> enableChunkLoading = value == 1);
+        b.desc("Enables or disables chunk loading for homes.");
+        b.minMax(0, 1);
+        b.setChangeEvent(ChunkLoadingHandler::updateAllTickets);
+
+        b.addDouble("loadRadiusMultiplier", () -> loadRadiusMultiplier, value -> loadRadiusMultiplier = value);
+        b.desc("Sets the chunk loading radius. Radius will be homeliness level multiplied by this value. This is on top of the base loading radius.");
+
+        b.addInt("baseLoadingRadius", () -> baseLoadingRadius, value -> baseLoadingRadius = value);
+        b.desc("Sets the base chunk loading radius.");
+
+        b.addInt("offlineLoading", () -> offlineLoading ? 1 : 0, value -> offlineLoading = value == 1);
+        b.desc("SEnables or disables chunk loading while home owner is offline.");
+        b.minMax(0, 1);
+        b.setChangeEvent(ChunkLoadingHandler::updateAllTickets);
 
 //        b.addInfo("########## Effect Config ##########");
 //
@@ -192,6 +222,7 @@ public class ModConfig {
         private String info = "";
         private double min = Integer.MIN_VALUE;
         private double max = Integer.MAX_VALUE;
+        private Runnable onChange = null;
 
         public ConfigProperty(String name, boolean floating, Supplier<Double> getter, Consumer<Double> setter) {
             this.name = name;
@@ -299,6 +330,12 @@ public class ModConfig {
                 set(input.readInt());
             }
         }
+
+        public void onChangeViaCommand() {
+            if (onChange != null) {
+                onChange.run();
+            }
+        }
     }
 
     private static class PropBuilder {
@@ -341,6 +378,10 @@ public class ModConfig {
 
         public void desc(String info) {
             prop.setInfo(info);
+        }
+
+        public void setChangeEvent(Runnable runnable) {
+            prop.onChange = runnable;
         }
     }
 
@@ -390,6 +431,9 @@ public class ModConfig {
     public static void saveConfig() {
         JsonObject obj = new JsonObject();
 
+        obj.addProperty("comment", "You should not edit this file directly! Use the in game command /home_sweet_home config");
+        obj.addProperty("comment_", "/home_sweet_home config list can be used to get details about each option and to easily set them by clicking on an option in the chat window.");
+
         for (ConfigProperty prop : properties) {
             prop.toJson(obj);
         }
@@ -417,6 +461,9 @@ public class ModConfig {
             return;
         }
         JsonObject obj = new JsonObject();
+
+        obj.addProperty("comment_", "You should not edit this file directly! Move hud elements in game by pressing the hud key + CTRL");
+
         obj.addProperty("homeHudX", homeHudPos[0]);
         obj.addProperty("homeHudY", homeHudPos[1]);
         obj.addProperty("statsHudX", statsHudPos[0]);

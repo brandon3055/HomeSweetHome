@@ -1,0 +1,17 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "model": "builtin/generated",
+    "transform": "forge:default-item"
+  },
+  "variants": {
+    "type": {
+      "sleep": {
+        "textures": { "layer0": "homesweethome:items/pill_sleeping" }
+      },
+      "caffeine": {
+        "textures": { "layer0": "homesweethome:items/pill_caffeine" }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "item": "homesweethome:pill",
+    "data": 0,
+    "count": 4
+  },
+  "pattern": [
+    " LW",
+    "LWL",
+    "WL "
+  ],
+  "key": {
+    "W": {
+      "type": "minecraft:item",
+      "item": "minecraft:nether_wart"
+    },
+    "L": {
+      "type": "forge:ore_dict",
+      "ore": "gemLapis"
+    }
+  }
+}

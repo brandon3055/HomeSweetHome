@@ -1,11 +1,16 @@
 package com.brandon3055.homesweethome.data;
 
 import com.brandon3055.homesweethome.ModConfig;
+import com.brandon3055.homesweethome.util.LogHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by brandon3055 on 2/01/2018.
@@ -113,6 +118,32 @@ public class PlayerHome {
     public void setSpawn(BlockPos spawn) {
         this.spawn = spawn;
         markDirty();
+    }
+
+    public int getLoadingRange() {
+        return ModConfig.baseLoadingRadius + (int) Math.floor(homeliness.getLevel() * ModConfig.loadRadiusMultiplier);
+    }
+
+    public List<ChunkPos> getLoadingChunks() {
+        List<ChunkPos> chunks = new LinkedList<>();
+
+        int rad = getLoadingRange();
+        if (rad > 0) {
+            ChunkPos pos = new ChunkPos(new BlockPos(getPos()));
+            if (rad == 1) {
+                chunks.add(pos);
+            }
+            else {
+                rad--;
+                for (int x = -rad; x <= rad; x++) {
+                    for (int z = -rad; z <= rad; z++) {
+                        chunks.add(new ChunkPos(pos.x + x, pos.z + z));
+                    }
+                }
+            }
+        }
+
+        return chunks;
     }
 
     //endregion

@@ -66,15 +66,23 @@ public class PlayerTickHelper {
         }
 
         timePassed /= 60D;
-
         lastTime = System.currentTimeMillis();
-
-        data.addTimeAwake(timePassed);
-        if (isInHome) {
-            data.modifyTimeAway(-(ModConfig.homesickReductionRate * timePassed));
+        data.gracePeriod = Math.max(0, data.gracePeriod - timePassed);
+        if (data.gracePeriod > 0) {
+            return;
         }
-        else {
-            data.modifyTimeAway(timePassed);
+
+        if (!player.capabilities.isCreativeMode) {
+            data.addTimeAwake(timePassed);
+
+            if (home != null) {
+                if (isInHome) {
+                    data.modifyTimeAway(-(ModConfig.homesickReductionRate * timePassed));
+                }
+                else {
+                    data.modifyTimeAway(timePassed);
+                }
+            }
         }
 
         if (isInHome) {

@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -100,6 +101,24 @@ public class ModEventHandler {
     }
 
     @SubscribeEvent
+    public void disconnectEvent(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        ModConfig.disconnectFromServer();
+    }
+
+    @SubscribeEvent
+    public void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.player instanceof EntityPlayerMP && event.player.getServer() != null) {
+            if (event.player.getServer().isDedicatedServer()) {
+                PacketDispatcher.sendConfigToClient((EntityPlayerMP) event.player);
+            }
+            PlayerData data = PlayerData.getPlayerData(event.player);
+            if (data != null && data.hasHome()){
+                ChunkLoadingHandler.reloadPlayerChunks(data.getUsername(), data.getHome(), event.player.getServer());
+            }
+        }
+    }
+
+    @SubscribeEvent
     public void playerLogOut(PlayerEvent.PlayerLoggedOutEvent event) {
         EntityPlayer player = event.player;
         if (player instanceof EntityPlayerMP) {
@@ -108,21 +127,10 @@ public class ModEventHandler {
                 tickHandler.clearEffects((EntityPlayerMP) player);
                 playerTickHandlerMap.remove(player.getName());
             }
+            ChunkLoadingHandler.playerLoggedOut(player.getName());
         }
         SleepHelper.playersAsleep.remove(player.getName());
         SleepHelper.playersVoted.remove(player.getName());
-    }
-
-    @SubscribeEvent
-    public void disconnectEvent(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
-        ModConfig.disconnectFromServer();
-    }
-
-    @SubscribeEvent
-    public void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.player instanceof EntityPlayerMP && event.player.getServer() != null && event.player.getServer().isDedicatedServer()) {
-            PacketDispatcher.sendConfigToClient((EntityPlayerMP) event.player);
-        }
     }
 
     @SubscribeEvent
@@ -159,6 +167,36 @@ public class ModEventHandler {
         }
 
         TeleportUtils.teleportEntity(player, home.getDimension(), closest.getX() + 0.5, closest.getY() + 0.2, closest.getZ() + 0.5);
+    }
+
+    @SubscribeEvent
+    public void worldLoaded(WorldEvent.Load event) {
+        if (event.getWorld().provider.getDimension() == 0) {
+            ChunkLoadingHandler.updateAllTickets();
+        }
+    }
+
+    public void putPlayerInSafePlace(EntityPlayer player, World targetWorld, BlockPos targetPos, int dimension, int horizontalRange, int verticalRange) {
+        List<BlockPos> validBlocks = new ArrayList<>();
+        Iterable<BlockPos> candidates = BlockPos.getAllInBox(targetPos.add(-horizontalRange, -verticalRange, -horizontalRange), targetPos.add(horizontalRange, verticalRange, horizontalRange));
+        DataUtils.forEachMatch(candidates, candidate -> isValidSpawn(candidate, targetWorld), validBlocks::add);
+
+        if (validBlocks.size() == 0) {
+            player.sendMessage(new TextComponentTranslation("hsh.msg.sleep.noSafePlaceToSpawn").setStyle(new Style().setColor(TextFormatting.RED)));
+            return;
+        }
+
+        BlockPos closest = validBlocks.get(0);
+        double dist = Integer.MAX_VALUE;
+        for (BlockPos candidate : validBlocks) {
+            double d = candidate.distanceSq(targetPos);
+            if (d < dist) {
+                closest = candidate;
+                dist = d;
+            }
+        }
+
+        TeleportUtils.teleportEntity(player, dimension, closest.getX() + 0.5, closest.getY() + 0.2, closest.getZ() + 0.5);
     }
 
     private boolean isValidSpawn(BlockPos pos, World world) {

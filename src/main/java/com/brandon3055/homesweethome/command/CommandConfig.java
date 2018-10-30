@@ -59,6 +59,7 @@ public class CommandConfig extends CommandBase {
             ConfigProperty prop = ModConfig.propertyMap.get(args[1]);
             if (prop != null) {
                 prop.setValue(args[2]);
+                prop.onChangeViaCommand();
                 ChatHelper.message(sender, GREEN + "Property " + args[1] + " changed to " + args[2]);
 
                 if (server.isDedicatedServer()){

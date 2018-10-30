@@ -8,9 +8,9 @@ import com.brandon3055.homesweethome.ModConfig;
 import com.brandon3055.homesweethome.command.ChatBuilder;
 import com.brandon3055.homesweethome.data.PlayerData;
 import com.brandon3055.homesweethome.data.PlayerHome;
+import com.brandon3055.homesweethome.integration.IntegrationHelper;
 import com.brandon3055.homesweethome.network.PacketMakeHome;
 import com.brandon3055.homesweethome.util.DelayedTask;
-import com.brandon3055.homesweethome.integration.IntegrationHelper;
 import com.google.common.base.Predicate;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.BlockHorizontal;
@@ -395,6 +395,7 @@ public class SleepHelper {
         if (player.bedLocation == null) {
             player.bedLocation = new BlockPos(player);
         }
+
         player.wakeUpPlayer(immediately, updateWorldFlag, setSpawn);
         playersAsleep.remove(player.getName());
         playersVoted.remove(player.getName());

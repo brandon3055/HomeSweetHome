@@ -24,8 +24,7 @@ public class Transformer implements IClassTransformer {
 		mapping = new ObfMapping("net/minecraft/entity/player/EntityPlayer", "func_70071_h_", "()V");
 		transformer.add(new PlayerUpdateTransformer(mapping));
 		mapping = new ObfMapping("net/minecraft/block/BlockBed", "func_180639_a", "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/EnumHand;Lnet/minecraft/util/EnumFacing;FFF)Z");
-		transformer.add(new MethodReplacer(mapping, blocks.get("n_bed_1"), blocks.get("i_true")));
-		transformer.add(new MethodReplacer(mapping, blocks.get("n_bed_2"), blocks.get("r_bed_2")));
+		transformer.add(new MethodReplacer(mapping, blocks.get("n_bed"), blocks.get("i_bed")));
 	}
 
 	@Override

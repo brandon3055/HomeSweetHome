@@ -22,7 +22,10 @@ public class ServerPacketHandler implements ICustomPacketHandler.IServerPacketHa
             SleepHelper.wakePlayer(player, true, true, false);
         }
         else {
-            if (player.isPlayerFullyAsleep() && SleepHelper.playersAsleep.contains(player.getName())) {
+            if (!player.isPlayerSleeping()) {
+                SleepHelper.wakePlayer(player, true, true, false);
+            }
+            else if (player.isPlayerFullyAsleep() && SleepHelper.playersAsleep.contains(player.getName())) {
                 SleepHelper.onPlayerCompleteSleep(player);
                 SleepHelper.wakePlayer(player, true, true, false);
             }

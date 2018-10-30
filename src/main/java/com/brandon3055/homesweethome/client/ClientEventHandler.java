@@ -1,6 +1,7 @@
 package com.brandon3055.homesweethome.client;
 
 import codechicken.lib.util.ClientUtils;
+import com.brandon3055.brandonscore.client.BCClientEventHandler;
 import com.brandon3055.brandonscore.client.utils.GuiHelper;
 import com.brandon3055.homesweethome.HomeSweetHome;
 import com.brandon3055.homesweethome.ModConfig;
@@ -12,21 +13,28 @@ import net.minecraft.block.BlockBed;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -167,11 +175,10 @@ public class ClientEventHandler {
                 }
             }
 
-            if (showHomeHud || showEffects) {
+            if (showHomeHud || showEffects || tick % 100 == 0) {
                 if (requestUpdate || tick % 20 == 0) {
                     PacketSyncClient.requestUpdateClientSide();
                 }
-
                 if (data.hasHome()) {
                     PlayerHome home = data.getHome();
                     dist = lookingAtBed && rtr != null && rtr.typeOfHit == RayTraceResult.Type.BLOCK ? home.getDistance(rtr.getBlockPos()) : home.getDistance(mc.player);
@@ -213,6 +220,78 @@ public class ClientEventHandler {
         }
     }
 
+    @SubscribeEvent
+    public void renderWorld(RenderWorldLastEvent event) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (!mc.debugRenderer.shouldRender() || data == null || !data.hasHome()) {
+            return;
+        }
+
+        EntityPlayer player = mc.player;
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+
+        double offsetX = player.prevPosX + (player.posX - player.prevPosX) * (double) mc.getRenderPartialTicks();
+        double offsetY = player.prevPosY + (player.posY - player.prevPosY) * (double) mc.getRenderPartialTicks();
+        double offsetZ = player.prevPosZ + (player.posZ - player.prevPosZ) * (double) mc.getRenderPartialTicks();
+
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        GlStateManager.color(1F, 1F, 1F, 1F);
+        GlStateManager.glLineWidth(1.0F);
+        GlStateManager.disableTexture2D();
+
+        List<ChunkPos> chunks = data.getHome().getLoadingChunks();
+
+        for (ChunkPos pos : chunks) {
+            int x = (pos.x * 16) + 8;
+            int z = (pos.z * 16) + 8;
+
+            buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+
+            for (int i = 0; i < 4; i++) {
+                double rot = ((BCClientEventHandler.elapsedTicks + mc.getRenderPartialTicks()) / 10F) + (i * Math.PI) / 2;
+                double xRot = Math.cos(rot) * 2;
+                double zRot = Math.sin(rot) * 2;
+                greenLine(buffer, x + xRot, z + zRot, offsetX, offsetY, offsetZ);
+            }
+            redLine(buffer, x, z, offsetX, offsetY, offsetZ);
+
+//            redLine(buffer, x - 8, z - 8, offsetX, offsetY, offsetZ);
+//            redLine(buffer, x + 8, z - 8, offsetX, offsetY, offsetZ);
+//            redLine(buffer, x - 8, z + 8, offsetX, offsetY, offsetZ);
+//            redLine(buffer, x + 8, z + 8, offsetX, offsetY, offsetZ);
+//            for (int i = 0; i < 32; i++) {
+//                int yPos = i * 8;
+//                buffer.pos(x - offsetX - 8, yPos - offsetY, z - offsetZ + 8).color(255, 255, 0, 255).endVertex();
+//                buffer.pos(x - offsetX + 8, yPos - offsetY, z - offsetZ + 8).color(255, 255, 0, 255).endVertex();
+//                buffer.pos(x - offsetX - 8, yPos - offsetY, z - offsetZ - 8).color(255, 255, 0, 255).endVertex();
+//                buffer.pos(x - offsetX + 8, yPos - offsetY, z - offsetZ - 8).color(255, 255, 0, 255).endVertex();
+//
+//                buffer.pos(x - offsetX + 8, yPos - offsetY, z - offsetZ - 8).color(255, 255, 0, 255).endVertex();
+//                buffer.pos(x - offsetX + 8, yPos - offsetY, z - offsetZ + 8).color(255, 255, 0, 255).endVertex();
+//                buffer.pos(x - offsetX - 8, yPos - offsetY, z - offsetZ - 8).color(255, 255, 0, 255).endVertex();
+//                buffer.pos(x - offsetX - 8, yPos - offsetY, z - offsetZ + 8).color(255, 255, 0, 255).endVertex();
+//            }
+
+            tessellator.draw();
+        }
+
+        GlStateManager.enableDepth();
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
+    }
+
+    private void greenLine(BufferBuilder buffer, double x, double z, double offX, double offY, double offZ) {
+        buffer.pos(x - offX, 0 - offY, z - offZ).color(0, 255, 0, 255).endVertex();
+        buffer.pos(x - offX, 255 - offY, z - offZ).color(0, 255, 0, 255).endVertex();
+    }
+
+    private void redLine(BufferBuilder buffer, double x, double z, double offX, double offY, double offZ) {
+        buffer.pos(x - offX, 0 - offY, z - offZ).color(255, 0, 0, 255).endVertex();
+        buffer.pos(x - offX, 255 - offY, z - offZ).color(255, 0, 0, 255).endVertex();
+    }
+
     @SideOnly(Side.CLIENT)
     private void renderEffectHud(FontRenderer fr, Minecraft mc, int x, int y, int screenWidth, int screenHeight) {
         int ySize = 0;
@@ -241,7 +320,7 @@ public class ClientEventHandler {
             int seconds = (int) ((data.getTimeAwake() % 1) * 60);
             String mins = "(" + (minutes > 9 ? minutes : "0" + minutes) + ":" + (seconds > 9 ? seconds : "0" + seconds) + ")";
             lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.daysWithoutSleep") + TextFormatting.RESET + " " + data.getDaysAwakeRounded() + (shiftDown ? " " + mins : ""), daysSleepColour);
-            if (hudKeyDown) {
+            if (hudKeyDown || lookingAtBed) {
                 double time = Math.max(0, ModConfig.timeAwakeToSleep - data.getTimeAwake());
                 minutes = (int) time;
                 seconds = (int) ((time % 1) * 60);
@@ -255,6 +334,12 @@ public class ClientEventHandler {
             }
             else {
                 lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.distFromHome" + ((int) dist > 1 || (int) dist == 0 ? "2" : ""), RESET + "" + (int) dist + "" + WHITE), 0xFFAA00);
+            }
+        }
+        if (hudKeyDown && data.hasHome()) {
+            int lr = data.getHome().getLoadingRange();
+            if (lr > 0 && ModConfig.enableChunkLoading){
+                lines.put(TextFormatting.WHITE + I18n.format("hsh.hud.loading_range") + ": " + RESET + lr, 0xFFAA00);
             }
         }
 

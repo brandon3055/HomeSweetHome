@@ -52,6 +52,11 @@ hsh.gui.moveElements.clickAndDrag=Click and drag the marked anchor points to mov
 key.showHomeInfo=Show home info
 hsh.hud.shiftToMoveElements=Hold CTRL to move hud elements
 hsh.msg.sleep.noSafePlaceToSpawn=Did not find a safe place to spawn you in you home location.
+hsh.hud.loading_range=Loading Range
+hsh.effect.drowsy.name=Drowsy
+hsh.effect.hyped.name=Hyped
+item.homesweethome:pill.sleep.name=Sleeping Pill
+item.homesweethome:pill.caffeine.name=Caffeine Pill
 
 # Sleep messages
 hsh.msg.sleep.notTired=You're not tired enough to sleep yet! Try again in %s minute.

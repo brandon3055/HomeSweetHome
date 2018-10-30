@@ -1,5 +1,7 @@
 package com.brandon3055.homesweethome.asm;
 
+import com.brandon3055.homesweethome.util.LogHelper;
+import net.minecraftforge.common.ForgeVersion;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
 import javax.annotation.Nullable;
@@ -13,6 +15,11 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public String[] getASMTransformerClass() {
+		if (ForgeVersion.getBuildVersion() < 2645) {
+			LogHelper.bigWarn("Home Sweet Home requires forge version 1.12.2-14.23.2.2645 or higher. Bed asm will not be loaded!");
+			return new String[0];
+		}
+
 		return new String[] { "com.brandon3055.homesweethome.asm.Transformer" };
 	}
 

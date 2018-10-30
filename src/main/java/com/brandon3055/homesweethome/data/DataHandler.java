@@ -55,13 +55,26 @@ public class DataHandler extends WorldSavedData {
      */
     public PlayerData getPlayerData(EntityPlayer player) {
         String id = player.getGameProfile().getId().toString();
-        return playerDataMap.computeIfAbsent(id, s -> new PlayerData(this, id));
+        PlayerData data = playerDataMap.computeIfAbsent(id, s -> {
+            markDirty();
+            return new PlayerData(this, id, player.getName());
+        });
+
+        if (!data.getUsername().equals(player.getName())) {
+            data.setUsername(player.getName());
+        }
+
+        return data;
     }
 
     public void clearPlayerData(EntityPlayer player) {
         String id = player.getGameProfile().getId().toString();
         playerDataMap.remove(id);
         markDirty();
+    }
+
+    public Map<String, PlayerData> getPlayerDataMap() {
+        return playerDataMap;
     }
 
     @Override

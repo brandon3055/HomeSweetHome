@@ -1,7 +1,9 @@
 package com.brandon3055.homesweethome.data;
 
+import com.brandon3055.homesweethome.ChunkLoadingHandler;
 import com.brandon3055.homesweethome.ModConfig;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 /**
  * Created by brandon3055 on 2/01/2018.
@@ -44,7 +46,11 @@ public class Homeliness {
     }
 
     public void addLevel(int levels) {
+        int homeRad = home.getLoadingRange();
         addL(levels);
+        if (homeRad != home.getLoadingRange() && FMLCommonHandler.instance().getMinecraftServerInstance() != null) {
+            ChunkLoadingHandler.reloadPlayerChunks(home.getPlayerData().getUsername(), home, FMLCommonHandler.instance().getMinecraftServerInstance());
+        }
         home.markDirty();
     }
 

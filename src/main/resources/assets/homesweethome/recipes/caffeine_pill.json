@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "item": "homesweethome:pill",
+    "data": 1,
+    "count": 4
+  },
+  "pattern": [
+    " BS",
+    "BCB",
+    "SB "
+  ],
+  "key": {
+    "B": {
+      "type": "minecraft:item",
+      "item": "minecraft:dye",
+      "data": 15
+    },
+    "S": {
+      "type": "minecraft:item",
+      "item": "minecraft:sugar"
+    },
+    "C": {
+      "type": "minecraft:item",
+      "item": "minecraft:dye",
+      "data": 3
+    }
+  }
+}

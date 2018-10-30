@@ -22,17 +22,20 @@ import static com.brandon3055.homesweethome.helpers.HSHEventHelper.Event.MAKE_PE
 public class PlayerData {
     private @Nullable DataHandler dataHandler;
     private String playerID;
+    private String username;
     private PlayerHome home = null;
     private double timeAway = 0; //Time away in minutes
     private double timeSinceSleep = 0; //time since sleep in minutes
+    public double gracePeriod = 0;
 
     public PlayerData(@Nullable DataHandler dataHandler) {
         this.dataHandler = dataHandler;
     }
 
-    protected PlayerData(DataHandler dataHandler, String playerID) {
+    protected PlayerData(DataHandler dataHandler, String playerID, String username) {
         this.dataHandler = dataHandler;
         this.playerID = playerID;
+        this.username = username;
     }
 
     public void markDirty() {
@@ -166,10 +169,21 @@ public class PlayerData {
         }
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+        markDirty();
+    }
+
     public PlayerData loadFromNBT(NBTTagCompound compound) {
         playerID = compound.getString("PlayerID");
+        username = compound.getString("Username");
         timeAway = compound.getDouble("Homesickness");
         timeSinceSleep = compound.getDouble("TimeSinceSleep");
+        gracePeriod = compound.getInteger("GracePeriod");
 
         if (compound.hasKey("Home", 10)) {
             home = new PlayerHome(this);
@@ -184,8 +198,10 @@ public class PlayerData {
 
     public NBTTagCompound saveToNBT(NBTTagCompound compound) {
         compound.setString("PlayerID", playerID);
+        compound.setString("Username", username);
         compound.setDouble("Homesickness", timeAway);
         compound.setDouble("TimeSinceSleep", timeSinceSleep);
+        compound.setInteger("GracePeriod", (int) gracePeriod);
 
         if (home != null) {
             NBTTagCompound homeTag = home.saveToNBT(new NBTTagCompound());
